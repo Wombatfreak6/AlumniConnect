@@ -1,12 +1,305 @@
-// Prisma schema placeholder for AlumniConnect
+// ============================================================================
+// Prisma Schema for AlumniConnect
+// Platform: Intelligent Platform to Interconnect Alumni and Students
 // Database: PostgreSQL
-// Note: Database models and migrations will be configured in subsequent development stages.
+// ORM: Prisma 7
+// ============================================================================
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+/// System roles for platform authorization
+enum Role {
+  STUDENT
+  ALUMNI
+  ADMIN
+}
+
+/// Employment types for posted opportunities
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  REMOTE
+}
+
+/// Experience level requirements for job postings
+enum ExperienceLevel {
+  ENTRY
+  MID
+  SENIOR
+  LEAD
+}
+
+/// Status lifecycle for student job referral requests
+enum ReferralStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+/// Status lifecycle for alumni mentorship availability slots
+enum MentorshipSlotStatus {
+  AVAILABLE
+  BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+/// Status lifecycle for student mentorship session bookings
+enum MentorshipRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+/// Categories for institutional and networking events
+enum EventCategory {
+  WEBINAR
+  WORKSHOP
+  REUNION
+  NETWORKING
+  CAREER_FAIR
+  TALK
+  OTHER
+}
+
+/// Format/mode of event attendance
+enum EventType {
+  VIRTUAL
+  IN_PERSON
+  HYBRID
+}
+
+/// Status of attendee event registration
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+/// Core user entity representing Students, Alumni, and Administrators
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STUDENT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 1-to-1 Relationship with detailed profile
+  profile Profile?
+
+  // 1-to-Many Relationships
+  userSkills         UserSkill[]
+  jobPosts           JobPost[]           @relation("UserJobPosts")
+  studentReferrals   JobReferral[]       @relation("StudentJobReferrals")
+  alumniReferrals    JobReferral[]       @relation("AlumniJobReferrals")
+  mentorshipSlots    MentorshipSlot[]    @relation("AlumniMentorshipSlots")
+  mentorshipRequests MentorshipRequest[] @relation("StudentMentorshipRequests")
+  organizedEvents    Event[]             @relation("OrganizedEvents")
+  eventRegistrations EventRegistration[] @relation("UserEventRegistrations")
+
+  @@index([email])
+  @@index([role])
+}
+
+/// Extended professional and academic profile for Users (1-to-1 with User)
+model Profile {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  college        String?
+  branch         String?
+  batch          String?
+  graduationYear Int?
+  bio            String?
+  company        String?
+  designation    String?
+  industry       String?
+  careerGoals    String?
+  linkedinUrl    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Master taxonomy of technical and domain skills
+model Skill {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Relationships
+  userSkills UserSkill[]
+}
+
+/// Explicit many-to-many join model linking Users and Skills
+model UserSkill {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  skillId   Int
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  // Duplicate protection: a user cannot have the same skill added twice
+  @@unique([userId, skillId])
+  @@index([userId])
+  @@index([skillId])
+}
+
+/// Job and internship opportunities posted by Alumni
+model JobPost {
+  id              Int             @id @default(autoincrement())
+  title           String
+  description     String
+  company         String
+  location        String
+  employmentType  EmploymentType
+  experienceLevel ExperienceLevel
+  applicationUrl  String?
+  deadline        DateTime?
+  postedById      Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relationships
+  postedBy  User          @relation("UserJobPosts", fields: [postedById], references: [id], onDelete: Restrict)
+  referrals JobReferral[]
+
+  @@index([postedById])
+  @@index([company])
+  @@index([deadline])
+}
+
+/// Referral requests connecting Students to Alumni for specific Job Posts
+model JobReferral {
+  id        Int            @id @default(autoincrement())
+  studentId Int
+  alumniId  Int
+  jobPostId Int
+  message   String?
+  status    ReferralStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relationships
+  student User    @relation("StudentJobReferrals", fields: [studentId], references: [id], onDelete: Restrict)
+  alumni  User    @relation("AlumniJobReferrals", fields: [alumniId], references: [id], onDelete: Restrict)
+  jobPost JobPost @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate referral requests by the same student for the same job
+  @@unique([studentId, jobPostId])
+  @@index([studentId])
+  @@index([alumniId])
+  @@index([jobPostId])
+  @@index([status])
+}
+
+/// Time slots published by Alumni offering 1-on-1 mentorship sessions
+model MentorshipSlot {
+  id          Int                  @id @default(autoincrement())
+  alumniId    Int
+  topic       String
+  description String?
+  expertise   String?
+  startTime   DateTime
+  endTime     DateTime
+  status      MentorshipSlotStatus @default(AVAILABLE)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  // Relationships
+  alumni   User                @relation("AlumniMentorshipSlots", fields: [alumniId], references: [id], onDelete: Restrict)
+  requests MentorshipRequest[]
+
+  @@index([alumniId])
+  @@index([startTime])
+  @@index([status])
+}
+
+/// Student booking requests submitted for specific Mentorship Slots
+model MentorshipRequest {
+  id        Int                     @id @default(autoincrement())
+  studentId Int
+  slotId    Int
+  message   String?
+  status    MentorshipRequestStatus @default(PENDING)
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  // Relationships
+  student User           @relation("StudentMentorshipRequests", fields: [studentId], references: [id], onDelete: Restrict)
+  slot    MentorshipSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  // Duplicate protection: prevent a student from requesting the same slot multiple times
+  @@unique([studentId, slotId])
+  @@index([studentId])
+  @@index([slotId])
+  @@index([status])
+}
+
+/// Campus, alumni reunion, webinar, and networking events
+model Event {
+  id                   Int           @id @default(autoincrement())
+  title                String
+  description          String
+  category             EventCategory
+  location             String
+  eventType            EventType     @default(VIRTUAL)
+  startDate            DateTime
+  endDate              DateTime
+  registrationDeadline DateTime?
+  capacity             Int?
+  organizerId          Int
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  // Relationships
+  organizer     User                @relation("OrganizedEvents", fields: [organizerId], references: [id], onDelete: Restrict)
+  registrations EventRegistration[]
+
+  @@index([organizerId])
+  @@index([startDate])
+  @@index([category])
+}
+
+/// Event registrations associating Attendees (Students/Alumni/Admins) with Events
+model EventRegistration {
+  id           Int                @id @default(autoincrement())
+  eventId      Int
+  userId       Int
+  status       RegistrationStatus @default(REGISTERED)
+  registeredAt DateTime           @default(now())
+
+  // Relationships
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation("UserEventRegistrations", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Duplicate protection: prevent a user from registering for the same event more than once
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
 }

@@ -1,0 +1,12 @@
+// Prisma schema placeholder for AlumniConnect
+// Database: PostgreSQL
+// Note: Database models and migrations will be configured in subsequent development stages.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}

@@ -42,12 +42,17 @@ alumni-connect/
 │   ├── prisma.config.ts        # Prisma 7 configuration (datasource connection & migration path)
 │   ├── src/
 │   │   ├── config/             # Environment, runtime & Prisma DB configuration
-│   │   │   ├── db.js           # Prisma client instance with PostgreSQL driver adapter
+│   │   │   ├── database.js     # Reusable Prisma client instance with PostgreSQL driver adapter
 │   │   │   └── index.js        # Environment configuration loader
-│   │   ├── middleware/         # Custom Express middlewares (error handling, auth)
-│   │   ├── modules/            # Feature modules (auth, alumni, students, jobs, etc.)
+│   │   ├── middleware/         # Custom Express middlewares (error handling, 404)
+│   │   │   ├── errorMiddleware.js
+│   │   │   └── notFoundMiddleware.js
+│   │   ├── modules/            # Feature modules (auth, users, etc.)
+│   │   │   ├── auth/
+│   │   │   └── users/
 │   │   ├── utils/              # Helper and utility functions
-│   │   └── server.js           # Express app initialization and server entry point
+│   │   ├── app.js              # Express app configuration & middleware pipeline
+│   │   └── server.js           # Server entry point & graceful shutdown listener
 │   ├── .env.example            # Backend environment variable template
 │   └── package.json            # Backend dependencies and scripts
 ├── .gitignore                  # Git ignore rules for node_modules, build, and env files

@@ -5,6 +5,9 @@ const config = require('./config');
 const notFoundMiddleware = require('./middleware/notFoundMiddleware');
 const errorMiddleware = require('./middleware/errorMiddleware');
 const authRoutes = require('./modules/auth/auth.routes');
+const usersRoutes = require('./modules/users/users.routes');
+const skillsRoutes = require('./modules/skills/skills.routes');
+const adminRoutes = require('./modules/admin/admin.routes');
 
 const app = express();
 
@@ -60,6 +63,15 @@ app.get('/api/health', (req, res) => {
 
 // Authentication module routes
 app.use('/api/auth', authRoutes);
+
+// User and Profile management routes
+app.use('/api/users', usersRoutes);
+
+// Skills catalog routes
+app.use('/api/skills', skillsRoutes);
+
+// Administrative oversight routes (RBAC protected)
+app.use('/api/admin', adminRoutes);
 
 // ============================================================================
 // ERROR & 404 HANDLERS

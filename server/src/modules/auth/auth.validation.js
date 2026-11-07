@@ -81,3 +81,4 @@ module.exports = {
   validateLoginInput,
   ALLOWED_PUBLIC_ROLES,
 };
+

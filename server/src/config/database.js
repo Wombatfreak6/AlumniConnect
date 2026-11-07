@@ -12,13 +12,10 @@ let pool;
  */
 function getPrismaClient() {
   if (!prisma) {
-    if (config.databaseUrl) {
-      pool = new Pool({ connectionString: config.databaseUrl });
-      const adapter = new PrismaPg(pool);
-      prisma = new PrismaClient({ adapter });
-    } else {
-      prisma = new PrismaClient();
-    }
+    const connectionString = config.databaseUrl || process.env.DATABASE_URL || 'postgresql://localhost:5432/alumni_connect?schema=public';
+    pool = new Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
+    prisma = new PrismaClient({ adapter });
   }
   return prisma;
 }

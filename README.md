@@ -44,12 +44,15 @@ alumni-connect/
 │   │   ├── config/             # Environment, runtime & Prisma DB configuration
 │   │   │   ├── database.js     # Reusable Prisma client instance with PostgreSQL driver adapter
 │   │   │   └── index.js        # Environment configuration loader
-│   │   ├── middleware/         # Custom Express middlewares (error handling, 404)
+│   │   ├── middleware/         # Custom Express middlewares (auth, error handling, 404)
+│   │   │   ├── authMiddleware.js
 │   │   │   ├── errorMiddleware.js
 │   │   │   └── notFoundMiddleware.js
-│   │   ├── modules/            # Feature modules (auth, users, etc.)
-│   │   │   ├── auth/
-│   │   │   └── users/
+│   │   ├── modules/            # Feature modules
+│   │   │   ├── auth/           # Authentication & session endpoints
+│   │   │   ├── users/          # Profile management & public discovery
+│   │   │   ├── skills/         # Catalog of canonical platform skills
+│   │   │   └── admin/          # Administrative user management & oversight
 │   │   ├── utils/              # Helper and utility functions
 │   │   ├── app.js              # Express app configuration & middleware pipeline
 │   │   └── server.js           # Server entry point & graceful shutdown listener
@@ -202,4 +205,5 @@ The application database is powered by **PostgreSQL** and managed using **Prisma
 - **Phase 1 (Completed)**: Project initialization, folder architecture, tooling, Vite React setup, and Express API server foundation.
 - **Phase 2 (Completed)**: PostgreSQL database architecture design, Prisma 7 configuration, driver adapter integration, and initial migration `20261107083835_init`.
 - **Phase 3 (Completed)**: Complete JWT authentication and RBAC system (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`), HttpOnly cookies, bcrypt password hashing, `authenticateToken` and `authorizeRoles` middlewares, and secure admin seed script.
-- **Phase 4 (Upcoming)**: Core feature modules (Profiles, Intelligent Alumni Matching, Mentorship, Job Board & Referrals, Events).
+- **Phase 4 (Completed)**: User & Profile Management (`GET /api/users/me`, `PUT /api/users/me`, `GET /api/users/:id`), Skills Management (`GET /api/skills`, `POST /api/users/me/skills`, `DELETE /api/users/me/skills/:skillId`), and Administrative Oversight (`GET /api/admin/users`, `GET /api/admin/users/:id`, `PATCH /api/admin/users/:id/status`).
+- **Phase 5 (Upcoming)**: Advanced features (Intelligent Alumni Matching, Mentorship Slot Booking, Job Board & Referrals, Events).

@@ -59,3 +59,4 @@ seedAdmin()
   .finally(async () => {
     await disconnectDB();
   });
+

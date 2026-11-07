@@ -154,7 +154,12 @@ The application database is powered by **PostgreSQL** and managed using **Prisma
    npx prisma generate
    ```
 
-7. Start the development server:
+7. Seed the initial Administrator account:
+   ```bash
+   npm run seed
+   ```
+
+8. Start the development server:
    ```bash
    npm run dev
    ```
@@ -196,5 +201,5 @@ The application database is powered by **PostgreSQL** and managed using **Prisma
 
 - **Phase 1 (Completed)**: Project initialization, folder architecture, tooling, Vite React setup, and Express API server foundation.
 - **Phase 2 (Completed)**: PostgreSQL database architecture design, Prisma 7 configuration, driver adapter integration, and initial migration `20261107083835_init`.
-- **Phase 3 (Upcoming)**: Authentication system (JWT, password hashing with bcrypt, role-based authorization for Students, Alumni, Admins).
+- **Phase 3 (Completed)**: Complete JWT authentication and RBAC system (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`), HttpOnly cookies, bcrypt password hashing, `authenticateToken` and `authorizeRoles` middlewares, and secure admin seed script.
 - **Phase 4 (Upcoming)**: Core feature modules (Profiles, Intelligent Alumni Matching, Mentorship, Job Board & Referrals, Events).

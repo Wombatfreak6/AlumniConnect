@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const notFoundMiddleware = require('./middleware/notFoundMiddleware');
 const errorMiddleware = require('./middleware/errorMiddleware');
+const authRoutes = require('./modules/auth/auth.routes');
 
 const app = express();
 
@@ -56,6 +57,9 @@ app.get('/api/health', (req, res) => {
     message: 'AlumniConnect API is running',
   });
 });
+
+// Authentication module routes
+app.use('/api/auth', authRoutes);
 
 // ============================================================================
 // ERROR & 404 HANDLERS

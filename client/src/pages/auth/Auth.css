@@ -1,0 +1,101 @@
+.auth-form-card {
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.auth-header {
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.auth-title {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--color-primary-900);
+  margin: 0 0 var(--space-1);
+}
+
+.auth-description {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-actions {
+  margin-top: var(--space-2);
+}
+
+.auth-footer-prompt {
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-4);
+}
+
+.auth-footer-link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer-link:hover {
+  text-decoration: underline;
+}
+
+/* Quick preview switcher for reviewers */
+.auth-demo-box {
+  margin-top: var(--space-6);
+  padding: var(--space-3);
+  background-color: var(--color-surface-hover);
+  border: 1px dashed var(--color-border-dark);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.auth-demo-title {
+  font-size: var(--font-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.auth-demo-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.role-selector-group {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.role-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-color: var(--color-surface);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.role-option.selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary);
+}

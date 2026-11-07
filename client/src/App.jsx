@@ -1,29 +1,41 @@
-import { useState } from 'react'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
+import DashboardLayout from './layouts/DashboardLayout';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import StudentDashboard from './pages/student/StudentDashboard';
+import AlumniDashboard from './pages/alumni/AlumniDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ProfilePage from './pages/profile/ProfilePage';
+import NotFoundPage from './pages/NotFoundPage';
 
-function App() {
-  const [status, setStatus] = useState('Frontend initialized successfully')
-
+export default function App() {
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', textAlign: 'center', padding: '3rem 1rem' }}>
-      <h1>🎓 AlumniConnect</h1>
-      <p style={{ fontSize: '1.2rem', color: '#4b5563' }}>
-        Intelligent Platform to Interconnect Alumni and Students
-      </p>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Landing & Marketing */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
 
-      <section style={{ margin: '2rem auto', maxWidth: '600px', padding: '1.5rem', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
-        <h2>System Status</h2>
-        <p style={{ color: '#16a34a', fontWeight: 'bold' }}>{status}</p>
-        <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-          Phase 1: Project Initialization & Tooling Setup
-        </p>
-      </section>
+        {/* Authentication Routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
 
-      <footer style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#9ca3af' }}>
-        React + Vite | Node.js + Express | PostgreSQL + Prisma
-      </footer>
-    </main>
-  )
+        {/* Portal & Dashboard Routes */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/alumni" element={<AlumniDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App

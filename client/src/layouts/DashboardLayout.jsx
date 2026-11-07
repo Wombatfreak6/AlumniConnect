@@ -1,0 +1,74 @@
+import React from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import Navbar from '../components/navigation/Navbar';
+import Sidebar from '../components/navigation/Sidebar';
+import './DashboardLayout.css';
+
+/**
+ * Common Dashboard Layout
+ * Shared layout for Student, Alumni, and Admin portals.
+ */
+export default function DashboardLayout({ defaultRole }) {
+  const location = useLocation();
+
+  // Infer active role from current path if not explicitly provided
+  let currentRole = defaultRole;
+  if (!currentRole) {
+    if (location.pathname.startsWith('/alumni')) {
+      currentRole = 'ALUMNI';
+    } else if (location.pathname.startsWith('/admin')) {
+      currentRole = 'ADMIN';
+    } else {
+      currentRole = 'STUDENT';
+    }
+  }
+
+  // Sidebar navigation presets per role
+  const sidebarConfigs = {
+    STUDENT: {
+      title: 'Student Hub',
+      items: [
+        { label: 'Overview', path: '/student', icon: '📊', exact: true },
+        { label: 'Find Mentors', path: '/student#mentors', icon: '🤝', badge: '3 Available' },
+        { label: 'Job Referrals', path: '/student#jobs', icon: '💼', badge: 'New' },
+        { label: 'My Profile', path: '/profile', icon: '👤' },
+      ],
+    },
+    ALUMNI: {
+      title: 'Alumni Portal',
+      items: [
+        { label: 'Overview', path: '/alumni', icon: '📊', exact: true },
+        { label: 'Mentorship Requests', path: '/alumni#requests', icon: '🎓', badge: '2 Pending' },
+        { label: 'Job Postings', path: '/alumni#postings', icon: '💼' },
+        { label: 'Public Profile', path: '/profile', icon: '👤' },
+      ],
+    },
+    ADMIN: {
+      title: 'Admin Console',
+      items: [
+        { label: 'Platform Metrics', path: '/admin', icon: '📈', exact: true },
+        { label: 'User Directory', path: '/admin#users', icon: '👥' },
+        { label: 'Access Control', path: '/admin#security', icon: '🛡️' },
+        { label: 'Admin Profile', path: '/profile', icon: '👤' },
+      ],
+    },
+  };
+
+  const activeConfig = sidebarConfigs[currentRole] || sidebarConfigs.STUDENT;
+
+  return (
+    <div className="dashboard-shell">
+      <Navbar />
+      <div className="dashboard-container container">
+        <Sidebar
+          role={currentRole}
+          title={activeConfig.title}
+          items={activeConfig.items}
+        />
+        <main className="dashboard-content" id="main-content">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}

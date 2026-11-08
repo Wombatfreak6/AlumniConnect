@@ -134,6 +134,12 @@ async function updateUserStatus(targetUserId, isActive, adminUserId) {
     throw error;
   }
 
+  if (existing.role === 'ADMIN' && !isActive) {
+    const error = new Error('Cannot deactivate a System Administrator account.');
+    error.statusCode = 400;
+    throw error;
+  }
+
   const updatedUser = await prisma.user.update({
     where: { id: targetUserId },
     data: { isActive },

@@ -4,6 +4,7 @@ import StatCard from '../../components/dashboard/StatCard';
 import ActivityFeed from '../../components/dashboard/ActivityFeed';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
+import useAuth from '../../hooks/useAuth';
 import {
   mockAlumniUser,
   mockAlumniStats,
@@ -14,8 +15,14 @@ import {
 import './AlumniDashboard.css';
 
 export default function AlumniDashboard() {
+  const { user } = useAuth();
   const [requests, setRequests] = useState(mockMentorshipRequests);
   const [actionNotice, setActionNotice] = useState(null);
+
+  const displayName = user?.name || mockAlumniUser.name;
+  const displayDesignation = user?.profile?.designation || mockAlumniUser.profile.designation;
+  const displayCompany = user?.profile?.company || mockAlumniUser.profile.company;
+  const displayGradYear = user?.profile?.graduationYear || mockAlumniUser.profile.graduationYear;
 
   const handleUpdateStatus = (id, newStatus) => {
     setRequests((prev) =>
@@ -31,10 +38,10 @@ export default function AlumniDashboard() {
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <h1 className="dashboard-page-title">
-            Welcome back, {mockAlumniUser.name} 🎓
+            Welcome back, {displayName} 🎓
           </h1>
           <p className="dashboard-page-subtitle">
-            {mockAlumniUser.profile.designation} at <strong>{mockAlumniUser.profile.company}</strong> • Class of {mockAlumniUser.profile.graduationYear}
+            {displayDesignation} at <strong>{displayCompany}</strong> • Class of {displayGradYear}
           </p>
         </div>
         <div className="welcome-actions">

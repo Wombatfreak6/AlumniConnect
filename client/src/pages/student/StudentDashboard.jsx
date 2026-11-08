@@ -4,6 +4,7 @@ import StatCard from '../../components/dashboard/StatCard';
 import ActivityFeed from '../../components/dashboard/ActivityFeed';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
+import useAuth from '../../hooks/useAuth';
 import {
   mockCurrentUser,
   mockStudentStats,
@@ -14,9 +15,15 @@ import {
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
   const [mentors] = useState(mockMentors);
   const [jobs] = useState(mockJobs);
   const [requestedSlot, setRequestedSlot] = useState(null);
+
+  const displayName = user?.name || mockCurrentUser.name;
+  const displayBranch = user?.profile?.branch || mockCurrentUser.profile.branch;
+  const displayGradYear = user?.profile?.graduationYear || mockCurrentUser.profile.graduationYear;
+  const displayCollege = user?.profile?.college || mockCurrentUser.profile.college;
 
   const handleRequestMentorship = (mentorName) => {
     setRequestedSlot(`Mentorship request placeholder sent to ${mentorName}!`);
@@ -29,10 +36,10 @@ export default function StudentDashboard() {
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <h1 className="dashboard-page-title">
-            Welcome back, {mockCurrentUser.name} 👋
+            Welcome back, {displayName} 👋
           </h1>
           <p className="dashboard-page-subtitle">
-            {mockCurrentUser.profile.branch} • Class of {mockCurrentUser.profile.graduationYear} • {mockCurrentUser.profile.college}
+            {displayBranch} • Class of {displayGradYear} • {displayCollege}
           </p>
         </div>
         <div className="welcome-actions">

@@ -64,6 +64,28 @@
   gap: var(--space-3);
 }
 
+.navbar-auth-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.navbar-user-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.navbar-user-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-main);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Mobile Toggle */
 .navbar-toggle {
   display: none;

@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/navigation/Navbar';
 import Sidebar from '../components/navigation/Sidebar';
+import useAuth from '../hooks/useAuth';
 import './DashboardLayout.css';
 
 /**
@@ -10,16 +11,19 @@ import './DashboardLayout.css';
  */
 export default function DashboardLayout({ defaultRole }) {
   const location = useLocation();
+  const { user } = useAuth();
 
-  // Infer active role from current path if not explicitly provided
+  // Infer active role: route-specific overrides or authenticated user role
   let currentRole = defaultRole;
   if (!currentRole) {
     if (location.pathname.startsWith('/alumni')) {
       currentRole = 'ALUMNI';
     } else if (location.pathname.startsWith('/admin')) {
       currentRole = 'ADMIN';
-    } else {
+    } else if (location.pathname.startsWith('/student')) {
       currentRole = 'STUDENT';
+    } else {
+      currentRole = user?.role || 'STUDENT';
     }
   }
 

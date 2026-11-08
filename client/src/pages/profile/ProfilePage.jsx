@@ -3,17 +3,19 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Textarea from '../../components/common/Textarea';
+import useAuth from '../../hooks/useAuth';
 import { mockCurrentUser } from '../../services/mockData';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    name: mockCurrentUser.name,
-    email: mockCurrentUser.email,
-    role: mockCurrentUser.role,
-    ...mockCurrentUser.profile,
-  });
+  const [profileData, setProfileData] = useState(() => ({
+    name: user?.name || mockCurrentUser.name,
+    email: user?.email || mockCurrentUser.email,
+    role: user?.role || mockCurrentUser.role,
+    ...(user?.profile || mockCurrentUser.profile),
+  }));
   const [skills, setSkills] = useState(mockCurrentUser.skills);
   const [newSkillInput, setNewSkillInput] = useState('');
   const [successNotice, setSuccessNotice] = useState(null);

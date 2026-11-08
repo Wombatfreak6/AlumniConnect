@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Card from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import useAuth from '../../hooks/useAuth';
+import { getDefaultDashboardPath } from '../../utils/navigation';
 import './Auth.css';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
-  const [formError, setFormError] = useState('');
+  const [apiError, setApiError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -22,16 +27,16 @@ export default function LoginPage() {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-    if (formError) setFormError('');
+    if (apiError) setApiError('');
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const validate = () => {
     const newErrors = {};
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required.';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!emailRegex.test(formData.email.trim())) {
       newErrors.email = 'Please provide a valid email address.';
     }
 
@@ -39,24 +44,42 @@ export default function LoginPage() {
       newErrors.password = 'Password is required.';
     }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setApiError('');
+
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
     setIsSubmitting(true);
-    // Simulating quick client validation navigation for prototype phase
-    setTimeout(() => {
+    try {
+      const user = await login({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
+
+      // Redirect to previous requested page if saved in navigation state, else role dashboard
+      const destination = location.state?.from?.pathname || getDefaultDashboardPath(user.role);
+      navigate(destination, { replace: true });
+    } catch (err) {
+      setApiError(
+        err.message || 'Invalid email or password. Please check your credentials.'
+      );
+    } finally {
       setIsSubmitting(false);
-      // Determine destination based on email or default to student
-      if (formData.email.includes('admin')) {
-        navigate('/admin');
-      } else if (formData.email.includes('alumni')) {
-        navigate('/alumni');
-      } else {
-        navigate('/student');
-      }
-    }, 600);
+    }
+  };
+
+  const handleQuickFill = (email, password) => {
+    setFormData({ email, password });
+    setErrors({});
+    setApiError('');
   };
 
   return (
@@ -64,14 +87,14 @@ export default function LoginPage() {
       <div className="auth-header">
         <h1 className="auth-title">Sign in to AlumniConnect</h1>
         <p className="auth-description">
-          Enter your collegiate email to access your network and dashboard
+          Enter your collegiate credentials to access your dashboard
         </p>
       </div>
 
-      {formError && (
+      {apiError && (
         <ErrorAlert
-          message={formError}
-          onDismiss={() => setFormError('')}
+          message={apiError}
+          onDismiss={() => setApiError('')}
         />
       )}
 
@@ -117,18 +140,17 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      {/* Quick Access Switcher for Prototype Review */}
+      {/* Quick Demo Pre-fill for Reviewers */}
       <div className="auth-demo-box">
-        <div className="auth-demo-title">Direct Portal Preview</div>
+        <div className="auth-demo-title">Quick Demo Login Pre-fill</div>
         <div className="auth-demo-buttons">
-          <Button size="sm" variant="outline" onClick={() => navigate('/student')}>
-            Student Portal
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate('/alumni')}>
-            Alumni Portal
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate('/admin')}>
-            Admin Portal
+          <Button
+            size="sm"
+            variant="outline"
+            type="button"
+            onClick={() => handleQuickFill('admin@alumniconnect.edu', 'Admin@Secure2026!')}
+          >
+            Admin Credentials
           </Button>
         </div>
       </div>

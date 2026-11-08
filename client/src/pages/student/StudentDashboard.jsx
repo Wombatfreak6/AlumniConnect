@@ -1,191 +1,262 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import StatCard from '../../components/dashboard/StatCard';
-import ActivityFeed from '../../components/dashboard/ActivityFeed';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
+import Loading from '../../components/common/Loading';
 import useAuth from '../../hooks/useAuth';
-import {
-  mockCurrentUser,
-  mockStudentStats,
-  mockMentors,
-  mockJobs,
-  mockActivities,
-} from '../../services/mockData';
+import userService from '../../services/userService';
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
-  const [mentors] = useState(mockMentors);
-  const [jobs] = useState(mockJobs);
-  const [requestedSlot, setRequestedSlot] = useState(null);
+  const { user: authUser } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState(null);
 
-  const displayName = user?.name || mockCurrentUser.name;
-  const displayBranch = user?.profile?.branch || mockCurrentUser.profile.branch;
-  const displayGradYear = user?.profile?.graduationYear || mockCurrentUser.profile.graduationYear;
-  const displayCollege = user?.profile?.college || mockCurrentUser.profile.college;
+  useEffect(() => {
+    let isMounted = true;
+    userService
+      .getMyProfile()
+      .then((res) => {
+        if (isMounted && res.data?.user) {
+          setProfileData(res.data.user);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch student profile:', err.message);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
-  const handleRequestMentorship = (mentorName) => {
-    setRequestedSlot(`Mentorship request placeholder sent to ${mentorName}!`);
-    setTimeout(() => setRequestedSlot(null), 4000);
-  };
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) {
+    return <Loading text="Loading student hub..." fullScreen={false} />;
+  }
+
+  const currentUser = profileData || authUser;
+  const profile = currentUser?.profile || {};
+  const skills = currentUser?.skills || [];
+
+  // Calculate Profile Completion Percentage
+  const completionCriteria = [
+    Boolean(currentUser?.name),
+    Boolean(profile.college),
+    Boolean(profile.branch),
+    Boolean(profile.graduationYear || profile.batch),
+    Boolean(profile.bio),
+    Boolean(profile.careerGoals),
+    Boolean(skills.length > 0),
+    Boolean(profile.linkedinUrl),
+  ];
+  const completedCount = completionCriteria.filter(Boolean).length;
+  const completionPercentage = Math.round((completedCount / completionCriteria.length) * 100);
 
   return (
     <div className="dashboard-page student-dashboard">
-      {/* Welcome Banner */}
+      {/* 1. Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
+          <div className="welcome-badge-strip">
+            <span className="badge badge-student">STUDENT PORTAL</span>
+            <span className="welcome-verified">Verified Account</span>
+          </div>
           <h1 className="dashboard-page-title">
-            Welcome back, {displayName} 👋
+            Welcome, {currentUser?.name || 'Student'} 👋
           </h1>
           <p className="dashboard-page-subtitle">
-            {displayBranch} • Class of {displayGradYear} • {displayCollege}
+            {profile.branch ? `${profile.branch}` : 'Department Not Specified'}
+            {profile.graduationYear ? ` • Class of ${profile.graduationYear}` : ''}
+            {profile.college ? ` • ${profile.college}` : ' • Update your college in Profile'}
           </p>
         </div>
         <div className="welcome-actions">
           <Link to="/profile">
             <Button variant="secondary" size="sm">
-              Edit Profile & Skills
+              Update Profile & Skills
             </Button>
           </Link>
         </div>
       </div>
 
-      {requestedSlot && (
-        <div className="dashboard-alert-banner">
-          <span>✅ {requestedSlot}</span>
+      {/* 2. Profile Completion Indicator */}
+      <Card className="completion-card">
+        <div className="completion-header">
+          <div>
+            <h3 className="completion-title">Profile Completion: {completionPercentage}%</h3>
+            <p className="completion-subtitle">
+              {completionPercentage === 100
+                ? 'Your student profile is comprehensive and ready for alumni matching!'
+                : 'A complete profile improves mentorship recommendations and alumni referral rates.'}
+            </p>
+          </div>
+          <Link to="/profile">
+            <Button variant="outline" size="sm">
+              {completionPercentage === 100 ? 'View Details' : 'Complete Profile'}
+            </Button>
+          </Link>
         </div>
-      )}
-
-      {/* Metric Stat Cards */}
-      <section className="stats-grid">
-        {mockStudentStats.map((stat) => (
-          <StatCard
-            key={stat.id}
-            title={stat.title}
-            value={stat.value}
-            subtitle={stat.subtitle}
-            icon={stat.icon}
-            variant={stat.variant}
+        <div className="progress-bar-track">
+          <div
+            className="progress-bar-fill"
+            style={{ width: `${completionPercentage}%` }}
+            role="progressbar"
+            aria-valuenow={completionPercentage}
+            aria-valuemin="0"
+            aria-valuemax="100"
           />
-        ))}
-      </section>
-
-      {/* Main Two-Column Layout */}
-      <div className="dashboard-main-grid">
-        {/* Left Column: Mentors & Jobs */}
-        <div className="dashboard-main-col">
-          {/* Recommended Alumni Mentors */}
-          <section id="mentors">
-            <Card
-              title="Recommended Alumni Mentors"
-              subtitle="Connect with graduates from your branch working across top industries"
-              action={
-                <span className="badge badge-primary">{mentors.length} Verified</span>
-              }
-            >
-              <div className="mentors-list">
-                {mentors.map((mentor) => (
-                  <div key={mentor.id} className="mentor-item">
-                    <div className="mentor-avatar">{mentor.avatar}</div>
-                    <div className="mentor-details">
-                      <div className="mentor-header">
-                        <h4 className="mentor-name">{mentor.name}</h4>
-                        <span className="mentor-rating">{mentor.rating}</span>
-                      </div>
-                      <p className="mentor-role">
-                        {mentor.role} at <strong>{mentor.company}</strong>
-                      </p>
-                      <p className="mentor-topic">
-                        <span className="topic-label">Focus Area:</span> {mentor.topic}
-                      </p>
-                      <div className="mentor-footer">
-                        <span className="slot-badge">
-                          {mentor.availableSlots} session(s) available this week
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRequestMentorship(mentor.name)}
-                        >
-                          Book Session
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </section>
-
-          {/* Job Openings with Referral Opportunities */}
-          <section id="jobs" style={{ marginTop: 'var(--space-6)' }}>
-            <Card
-              title="Featured Job Referrals"
-              subtitle="Direct referrals posted by alumni in your college network"
-            >
-              <div className="jobs-list">
-                {jobs.map((job) => (
-                  <div key={job.id} className="job-card-item">
-                    <div className="job-info">
-                      <div className="job-top">
-                        <h4 className="job-title">{job.title}</h4>
-                        <span className="job-type-pill">{job.employmentType}</span>
-                      </div>
-                      <p className="job-company">
-                        {job.company} • <span>{job.location}</span>
-                      </p>
-                      <div className="job-tags">
-                        {job.tags.map((tag) => (
-                          <span key={tag} className="job-tag">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="job-posted-by">
-                        Posted by: <em>{job.postedBy}</em> • Deadline: {job.deadline}
-                      </p>
-                    </div>
-                    <div className="job-actions">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleRequestMentorship(job.postedBy)}
-                      >
-                        Request Referral
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </section>
         </div>
+        <div className="completion-checklist">
+          <span className={`check-item ${profile.college ? 'done' : 'pending'}`}>
+            {profile.college ? '✔ College' : '○ College'}
+          </span>
+          <span className={`check-item ${profile.branch ? 'done' : 'pending'}`}>
+            {profile.branch ? '✔ Branch' : '○ Branch'}
+          </span>
+          <span className={`check-item ${skills.length > 0 ? 'done' : 'pending'}`}>
+            {skills.length > 0 ? `✔ Skills (${skills.length})` : '○ Skills'}
+          </span>
+          <span className={`check-item ${profile.careerGoals ? 'done' : 'pending'}`}>
+            {profile.careerGoals ? '✔ Career Goals' : '○ Career Goals'}
+          </span>
+          <span className={`check-item ${profile.bio ? 'done' : 'pending'}`}>
+            {profile.bio ? '✔ Bio' : '○ Bio'}
+          </span>
+        </div>
+      </Card>
 
-        {/* Right Column: Activity Feed & Quick Resources */}
-        <aside className="dashboard-side-col">
-          <ActivityFeed
-            title="Your Activity"
-            items={mockActivities}
-          />
-
-          <Card title="Career Roadmap Tips" style={{ marginTop: 'var(--space-6)' }}>
-            <div className="tips-list">
-              <div className="tip-item">
-                <span className="tip-bullet">1.</span>
-                <p>Complete your profile details and skill tags to receive personalized mentor recommendations.</p>
-              </div>
-              <div className="tip-item">
-                <span className="tip-bullet">2.</span>
-                <p>Prepare targeted questions before scheduling a 1-on-1 alumni mentorship session.</p>
-              </div>
-              <div className="tip-item">
-                <span className="tip-bullet">3.</span>
-                <p>Keep your GitHub and LinkedIn URLs up-to-date for alumni referral applications.</p>
-              </div>
+      {/* 3. Grid: Live Skills & Career Interests */}
+      <div className="student-profile-overview-grid">
+        {/* Skills Overview */}
+        <Card
+          title="Skills & Technical Competencies"
+          subtitle="Skills listed on your live collegiate profile"
+          action={
+            <Link to="/profile" className="card-link-action">
+              + Manage Skills
+            </Link>
+          }
+        >
+          {skills.length === 0 ? (
+            <div className="empty-overview-box">
+              <p>No skills added yet.</p>
+              <Link to="/profile">
+                <Button size="sm" variant="outline">
+                  Add Your Technical Skills
+                </Button>
+              </Link>
             </div>
-          </Card>
-        </aside>
+          ) : (
+            <div className="skills-tag-cloud">
+              {skills.map((skill) => (
+                <span key={skill.id} className="skill-pill">
+                  {skill.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Career Interests Overview */}
+        <Card
+          title="Career Interests & Direction"
+          subtitle="Your professional focus and aspirations"
+          action={
+            <Link to="/profile" className="card-link-action">
+              Edit
+            </Link>
+          }
+        >
+          {profile.careerGoals ? (
+            <p className="career-goals-display">{profile.careerGoals}</p>
+          ) : (
+            <div className="empty-overview-box">
+              <p>You haven&apos;t specified your career goals yet.</p>
+              <Link to="/profile">
+                <Button size="sm" variant="outline">
+                  Define Career Aspirations
+                </Button>
+              </Link>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* 4. Future Modules Navigation & Placeholders */}
+      <div className="modules-header">
+        <h2 className="modules-title">Platform Capabilities & Roadmapped Modules</h2>
+        <p className="modules-subtitle">
+          Modules under active development by your AlumniConnect engineering team
+        </p>
+      </div>
+
+      <div className="modules-grid">
+        {/* Navigation to Jobs Placeholder */}
+        <Card className="module-card">
+          <div className="module-top">
+            <span className="module-icon" aria-hidden="true">💼</span>
+            <span className="module-status-badge badge-phase">Phase 2 • Member 2</span>
+          </div>
+          <h3 className="module-name">Job & Internship Referrals</h3>
+          <p className="module-desc">
+            Direct referral pipeline to request internal company applications from alumni. Member 2 is
+            currently implementing the JobPost and JobReferral backend workflows.
+          </p>
+          <div className="module-footer">
+            <span className="placeholder-tag">Placeholder — Coming in Phase 2</span>
+          </div>
+        </Card>
+
+        {/* Navigation to Mentorship Placeholder */}
+        <Card className="module-card">
+          <div className="module-top">
+            <span className="module-icon" aria-hidden="true">🤝</span>
+            <span className="module-status-badge badge-phase">Phase 3 • Member 3</span>
+          </div>
+          <h3 className="module-name">1-on-1 Alumni Mentorship</h3>
+          <p className="module-desc">
+            Structured advisory sessions and smart alumni matching. Member 3 is building the
+            MentorshipSlot calendar availability and booking request management engine.
+          </p>
+          <div className="module-footer">
+            <span className="placeholder-tag">Placeholder — Coming in Phase 3</span>
+          </div>
+        </Card>
+
+        {/* Navigation to Networking Placeholder */}
+        <Card className="module-card">
+          <div className="module-top">
+            <span className="module-icon" aria-hidden="true">👥</span>
+            <span className="module-status-badge badge-future">Upcoming</span>
+          </div>
+          <h3 className="module-name">Alumni Network Directory</h3>
+          <p className="module-desc">
+            Branch and batch-wise alumni directory discovery to connect with graduated seniors across
+            global technology and research firms.
+          </p>
+          <div className="module-footer">
+            <span className="placeholder-tag">Placeholder — Network Discovery</span>
+          </div>
+        </Card>
+
+        {/* Navigation to Events Placeholder */}
+        <Card className="module-card">
+          <div className="module-top">
+            <span className="module-icon" aria-hidden="true">📅</span>
+            <span className="module-status-badge badge-future">Upcoming</span>
+          </div>
+          <h3 className="module-name">Campus Events & Webinars</h3>
+          <p className="module-desc">
+            Collegiate tech talks, virtual webinars, alumni roundtables, and career workshops
+            managed collaboratively with college administration.
+          </p>
+          <div className="module-footer">
+            <span className="placeholder-tag">Placeholder — Events Engine</span>
+          </div>
+        </Card>
       </div>
     </div>
   );

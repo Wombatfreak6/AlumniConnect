@@ -5,158 +5,49 @@
   width: 100%;
 }
 
-.requests-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.alumni-overview-grid,
+.alumni-expertise-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
 }
 
-.request-card {
-  padding: var(--space-4);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+.alumni-details-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
 
-.request-header {
+.alumni-detail-row {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-}
-
-.student-name {
-  font-size: var(--font-base);
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-}
-
-.student-branch {
-  font-size: var(--font-xs);
-  color: var(--color-text-secondary);
-}
-
-.status-pill {
-  font-size: var(--font-xs);
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.status-accepted {
-  background-color: #ecfdf5;
-  color: #065f46;
-}
-
-.status-declined {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.request-body {
-  font-size: var(--font-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.request-body p {
-  margin: 0;
-}
-
-.request-message {
-  font-style: italic;
-  color: var(--color-text-secondary);
-  background-color: var(--color-surface-hover);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  margin-top: var(--space-1) !important;
-}
-
-.request-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.alumni-jobs-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.alumni-job-row {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--color-surface-hover);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-sm);
+  gap: var(--space-2);
   flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
-.job-row-title {
-  font-size: var(--font-sm);
+.alumni-detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-key {
   font-weight: 600;
-  margin: 0;
-}
-
-.job-row-meta {
-  font-size: var(--font-xs);
   color: var(--color-text-secondary);
-  margin: 0;
 }
 
-/* Office hours widget */
-.office-hours-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.slot-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-3);
-  background-color: var(--color-surface-hover);
-  border-radius: var(--radius-md);
-  font-size: var(--font-xs);
-}
-
-.slot-day {
-  font-weight: 600;
+.detail-value {
   color: var(--color-text);
+  font-weight: 500;
+  text-align: right;
 }
 
-.slot-time {
-  color: var(--color-text-secondary);
-}
-
-.slot-state {
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.slot-state.booked {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.slot-state.available {
-  background-color: #ecfdf5;
-  color: #065f46;
+@media (max-width: 768px) {
+  .alumni-overview-grid,
+  .alumni-expertise-grid {
+    grid-template-columns: 1fr;
+  }
 }

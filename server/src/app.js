@@ -8,6 +8,7 @@ const authRoutes = require('./modules/auth/auth.routes');
 const usersRoutes = require('./modules/users/users.routes');
 const skillsRoutes = require('./modules/skills/skills.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
+const jobsRoutes = require('./modules/jobs/jobs.routes');
 
 const app = express();
 
@@ -72,6 +73,9 @@ app.use('/api/skills', skillsRoutes);
 
 // Administrative oversight routes (RBAC protected)
 app.use('/api/admin', adminRoutes);
+
+// Job board and posting management routes
+app.use('/api/jobs', jobsRoutes);
 
 // ============================================================================
 // ERROR & 404 HANDLERS

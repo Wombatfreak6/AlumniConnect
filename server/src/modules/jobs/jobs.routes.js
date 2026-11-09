@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const jobsController = require('./jobs.controller');
 const referralsController = require('../referrals/referrals.controller');
+const networkController = require('../network/network.controller');
 const { authenticateToken, authorizeRoles } = require('../../middleware/authMiddleware');
 
 const router = Router();
@@ -32,6 +33,14 @@ router.post(
   authenticateToken,
   authorizeRoles('ALUMNI'),
   jobsController.createJob
+);
+
+// Student: get intelligent job recommendations (Must be before /:id)
+router.get(
+  '/recommendations',
+  authenticateToken,
+  authorizeRoles('STUDENT'),
+  networkController.getJobRecommendations
 );
 
 // All authenticated users: view full details of a single job

@@ -202,3 +202,4 @@ module.exports = {
   VALID_EMPLOYMENT_TYPES,
   VALID_EXPERIENCE_LEVELS,
 };
+

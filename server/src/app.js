@@ -9,6 +9,10 @@ const usersRoutes = require('./modules/users/users.routes');
 const skillsRoutes = require('./modules/skills/skills.routes');
 const adminRoutes = require('./modules/admin/admin.routes');
 const jobsRoutes = require('./modules/jobs/jobs.routes');
+const referralsRoutes = require('./modules/referrals/referrals.routes');
+const referralsController = require('./modules/referrals/referrals.controller');
+const networkRoutes = require('./modules/network/network.routes');
+const { authenticateToken, authorizeRoles } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -76,6 +80,26 @@ app.use('/api/admin', adminRoutes);
 
 // Job board and posting management routes
 app.use('/api/jobs', jobsRoutes);
+
+// Referral workflow routes
+app.use('/api/referrals', referralsRoutes);
+
+// Intelligent network matching & recommendations
+app.use('/api/network', networkRoutes);
+
+// Direct alumni and student referral endpoints (as specified in Handover spec)
+app.get(
+  '/api/alumni/referrals',
+  authenticateToken,
+  authorizeRoles('ALUMNI'),
+  referralsController.getAlumniReferrals
+);
+app.get(
+  '/api/student/referrals',
+  authenticateToken,
+  authorizeRoles('STUDENT'),
+  referralsController.getStudentReferrals
+);
 
 // ============================================================================
 // ERROR & 404 HANDLERS

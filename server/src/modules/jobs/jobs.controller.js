@@ -16,7 +16,8 @@ async function createJob(req, res, next) {
       return res.status(400).json({ success: false, message: errors.join(' ') });
     }
 
-    const job = await jobsService.createJob(req.user.id, sanitized);
+    const currentUserId = req.user.userId || req.user.id;
+    const job = await jobsService.createJob(currentUserId, sanitized);
 
     return res.status(201).json({
       success: true,
@@ -38,7 +39,8 @@ async function createJob(req, res, next) {
  */
 async function getMyJobs(req, res, next) {
   try {
-    const jobs = await jobsService.getMyJobs(req.user.id);
+    const currentUserId = req.user.userId || req.user.id;
+    const jobs = await jobsService.getMyJobs(currentUserId);
 
     return res.status(200).json({
       success: true,
@@ -119,7 +121,8 @@ async function updateJob(req, res, next) {
     // Fetch current record to verify existence and ownership
     const existing = await jobsService.getJobById(id);
 
-    if (existing.postedById !== req.user.id && req.user.role !== 'ADMIN') {
+    const currentUserId = req.user.userId || req.user.id;
+    if (existing.postedById !== currentUserId && req.user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: only the original poster or an administrator can update this job.',
@@ -169,7 +172,8 @@ async function deleteJob(req, res, next) {
     // Fetch to verify existence and ownership before destructive operation
     const existing = await jobsService.getJobById(id);
 
-    if (existing.postedById !== req.user.id && req.user.role !== 'ADMIN') {
+    const currentUserId = req.user.userId || req.user.id;
+    if (existing.postedById !== currentUserId && req.user.role !== 'ADMIN') {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: only the original poster or an administrator can delete this job.',

@@ -210,19 +210,29 @@ export default function AlumniDashboard() {
       </div>
 
       <div className="modules-grid">
-        {/* Navigation to Job Management Placeholder */}
+        {/* Navigation to Job Management Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">💼</span>
-            <span className="module-status-badge badge-phase">Phase 2 • Member 2</span>
+            <span className="module-status-badge badge-active" style={{ backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', border: '1px solid var(--color-success)' }}>
+              Active • Live Now
+            </span>
           </div>
           <h3 className="module-name">Job & Referral Management</h3>
           <p className="module-desc">
-            Post hiring openings from your organization and review student referral applications.
-            Member 2 is actively constructing the JobPost and referral routing workflow.
+            Post hiring openings from your organization, manage your active listings, and review student referral inquiries.
           </p>
-          <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Job Management Module</span>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Link to="/jobs/create">
+              <Button size="sm" variant="primary">
+                + Post Job
+              </Button>
+            </Link>
+            <Link to="/jobs/my">
+              <Button size="sm" variant="outline">
+                My Postings
+              </Button>
+            </Link>
           </div>
         </Card>
 

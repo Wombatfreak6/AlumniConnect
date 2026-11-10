@@ -194,6 +194,27 @@ export default function StudentDashboard() {
       </div>
 
       <div className="modules-grid">
+        {/* Navigation to Intelligent Recommendations Live Card */}
+        <Card className="module-card">
+          <div className="module-top">
+            <span className="module-icon" aria-hidden="true">⚡</span>
+            <span className="module-status-badge badge-active" style={{ backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', border: '1px solid var(--color-success)' }}>
+              Active • Live Now
+            </span>
+          </div>
+          <h3 className="module-name">Smart Match & Recommendations</h3>
+          <p className="module-desc">
+            Automated recommendations matching your verified skills, branch, and career goals with top alumni mentors and tailored job openings.
+          </p>
+          <div className="module-footer">
+            <Link to="/network/matches">
+              <Button size="sm" variant="primary">
+                Explore Matches →
+              </Button>
+            </Link>
+          </div>
+        </Card>
+
         {/* Navigation to Jobs Live Card */}
         <Card className="module-card">
           <div className="module-top">

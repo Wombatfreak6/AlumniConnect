@@ -19,6 +19,7 @@ import EditJobPage from './pages/jobs/EditJobPage';
 import MyJobsPage from './pages/jobs/MyJobsPage';
 import StudentReferralsPage from './pages/referrals/StudentReferralsPage';
 import AlumniReferralsPage from './pages/referrals/AlumniReferralsPage';
+import RecommendationsPage from './pages/network/RecommendationsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
             <Route element={<DashboardLayout defaultRole="STUDENT" />}>
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/referrals/my" element={<StudentReferralsPage />} />
+              <Route path="/network/matches" element={<RecommendationsPage />} />
             </Route>
           </Route>
 

@@ -27,7 +27,8 @@ export default function DashboardLayout({ defaultRole }) {
       currentRole = 'ADMIN';
     } else if (
       location.pathname.startsWith('/student') ||
-      location.pathname.startsWith('/referrals/my')
+      location.pathname.startsWith('/referrals/my') ||
+      location.pathname.startsWith('/network/matches')
     ) {
       currentRole = 'STUDENT';
     } else {
@@ -41,6 +42,7 @@ export default function DashboardLayout({ defaultRole }) {
       title: 'Student Hub',
       items: [
         { label: 'Overview', path: '/student', icon: '📊', exact: true },
+        { label: 'Smart Matches', path: '/network/matches', icon: '⚡', badge: 'AI' },
         { label: 'Job Opportunities', path: '/jobs', icon: '💼' },
         { label: 'My Referrals', path: '/referrals/my', icon: '🤝' },
         { label: 'Find Mentors', path: '/student#mentors', icon: '🎓', badge: '3 Available' },

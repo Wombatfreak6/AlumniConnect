@@ -194,19 +194,24 @@ export default function StudentDashboard() {
       </div>
 
       <div className="modules-grid">
-        {/* Navigation to Jobs Placeholder */}
+        {/* Navigation to Jobs Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">💼</span>
-            <span className="module-status-badge badge-phase">Phase 2 • Member 2</span>
+            <span className="module-status-badge badge-active" style={{ backgroundColor: 'var(--color-success-bg)', color: 'var(--color-success)', border: '1px solid var(--color-success)' }}>
+              Active • Live Now
+            </span>
           </div>
           <h3 className="module-name">Job & Internship Referrals</h3>
           <p className="module-desc">
-            Direct referral pipeline to request internal company applications from alumni. Member 2 is
-            currently implementing the JobPost and JobReferral backend workflows.
+            Direct referral pipeline to request internal company applications from alumni. Browse active openings and receive personalized matching recommendations.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Coming in Phase 2</span>
+            <Link to="/jobs">
+              <Button size="sm" variant="primary">
+                Browse Job Board →
+              </Button>
+            </Link>
           </div>
         </Card>
 

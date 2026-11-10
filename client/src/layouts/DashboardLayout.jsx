@@ -34,7 +34,7 @@ export default function DashboardLayout({ defaultRole }) {
       items: [
         { label: 'Overview', path: '/student', icon: '📊', exact: true },
         { label: 'Find Mentors', path: '/student#mentors', icon: '🤝', badge: '3 Available' },
-        { label: 'Job Referrals', path: '/student#jobs', icon: '💼', badge: 'New' },
+        { label: 'Job Opportunities', path: '/jobs', icon: '💼' },
         { label: 'My Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -42,8 +42,9 @@ export default function DashboardLayout({ defaultRole }) {
       title: 'Alumni Portal',
       items: [
         { label: 'Overview', path: '/alumni', icon: '📊', exact: true },
+        { label: 'Job Board', path: '/jobs', icon: '💼' },
+        { label: 'My Job Postings', path: '/jobs/my', icon: '📋' },
         { label: 'Mentorship Requests', path: '/alumni#requests', icon: '🎓', badge: '2 Pending' },
-        { label: 'Job Postings', path: '/alumni#postings', icon: '💼' },
         { label: 'Public Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -51,6 +52,7 @@ export default function DashboardLayout({ defaultRole }) {
       title: 'Admin Console',
       items: [
         { label: 'Platform Metrics', path: '/admin', icon: '📈', exact: true },
+        { label: 'Job Board', path: '/jobs', icon: '💼' },
         { label: 'User Directory', path: '/admin#users', icon: '👥' },
         { label: 'Access Control', path: '/admin#security', icon: '🛡️' },
         { label: 'Admin Profile', path: '/profile', icon: '👤' },

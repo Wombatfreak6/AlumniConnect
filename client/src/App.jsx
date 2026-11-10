@@ -12,6 +12,11 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import AlumniDashboard from './pages/alumni/AlumniDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProfilePage from './pages/profile/ProfilePage';
+import JobBoardPage from './pages/jobs/JobBoardPage';
+import JobDetailsPage from './pages/jobs/JobDetailsPage';
+import CreateJobPage from './pages/jobs/CreateJobPage';
+import EditJobPage from './pages/jobs/EditJobPage';
+import MyJobsPage from './pages/jobs/MyJobsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -54,9 +59,20 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Protected Profile: Accessible by any authenticated role */}
+          {/* Protected Alumni / Admin Job Management Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['ALUMNI', 'ADMIN']} />}>
+            <Route element={<DashboardLayout defaultRole="ALUMNI" />}>
+              <Route path="/jobs/create" element={<CreateJobPage />} />
+              <Route path="/jobs/my" element={<MyJobsPage />} />
+              <Route path="/jobs/:id/edit" element={<EditJobPage />} />
+            </Route>
+          </Route>
+
+          {/* Protected General Job Board Routes: Accessible by all authenticated roles */}
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/jobs" element={<JobBoardPage />} />
+              <Route path="/jobs/:id" element={<JobDetailsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>

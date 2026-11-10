@@ -17,6 +17,8 @@ import JobDetailsPage from './pages/jobs/JobDetailsPage';
 import CreateJobPage from './pages/jobs/CreateJobPage';
 import EditJobPage from './pages/jobs/EditJobPage';
 import MyJobsPage from './pages/jobs/MyJobsPage';
+import StudentReferralsPage from './pages/referrals/StudentReferralsPage';
+import AlumniReferralsPage from './pages/referrals/AlumniReferralsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -42,6 +44,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="STUDENT" />}>
               <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/referrals/my" element={<StudentReferralsPage />} />
             </Route>
           </Route>
 
@@ -59,12 +62,13 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Protected Alumni / Admin Job Management Routes */}
+          {/* Protected Alumni / Admin Job & Referral Management Routes */}
           <Route element={<ProtectedRoute allowedRoles={['ALUMNI', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ALUMNI" />}>
               <Route path="/jobs/create" element={<CreateJobPage />} />
               <Route path="/jobs/my" element={<MyJobsPage />} />
               <Route path="/jobs/:id/edit" element={<EditJobPage />} />
+              <Route path="/referrals/received" element={<AlumniReferralsPage />} />
             </Route>
           </Route>
 

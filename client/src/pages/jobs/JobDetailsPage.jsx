@@ -24,6 +24,8 @@ export default function JobDetailsPage() {
   const [submittingReferral, setSubmittingReferral] = useState(false);
   const [referralSuccess, setReferralSuccess] = useState(false);
   const [referralError, setReferralError] = useState(null);
+  const [hasRequested, setHasRequested] = useState(false);
+  const [existingReferralStatus, setExistingReferralStatus] = useState(null);
 
   // Delete confirmation
   const [deleting, setDeleting] = useState(false);
@@ -51,10 +53,31 @@ export default function JobDetailsPage() {
         }
       });
 
+    // Check if student already submitted a referral request for this job
+    if (user?.role === 'STUDENT') {
+      jobService
+        .getStudentReferrals()
+        .then((res) => {
+          if (!isMounted) return;
+          if (res?.success && Array.isArray(res?.data?.referrals)) {
+            const found = res.data.referrals.find(
+              (r) => Number(r.jobPostId) === Number(id) || Number(r.jobPost?.id) === Number(id)
+            );
+            if (found) {
+              setHasRequested(true);
+              setExistingReferralStatus(found.status);
+            }
+          }
+        })
+        .catch(() => {
+          // Ignore non-blocking referral status fetch error
+        });
+    }
+
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, user?.role]);
 
   // Handle referral submission
   const handleSubmitReferral = async (e) => {
@@ -66,11 +89,13 @@ export default function JobDetailsPage() {
         message: referralMessage.trim() || undefined,
       });
       setReferralSuccess(true);
+      setHasRequested(true);
+      setExistingReferralStatus('PENDING');
       setTimeout(() => {
         setIsModalOpen(false);
         setReferralSuccess(false);
         setReferralMessage('');
-      }, 2500);
+      }, 2000);
     } catch (err) {
       setReferralError(err.message || 'Failed to submit referral request.');
     } finally {
@@ -354,27 +379,88 @@ export default function JobDetailsPage() {
                 )}
               </div>
 
-              {/* Student Action: Request Referral */}
+              {/* Student Action: Request Referral or View Existing Status */}
               {isStudent && (
                 <div style={{ marginTop: 'var(--space-4)' }}>
-                  <Button
-                    variant="primary"
-                    block
-                    size="lg"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    🤝 Request Internal Referral
-                  </Button>
-                  <p
-                    style={{
-                      fontSize: 'var(--font-size-xs)',
-                      color: 'var(--color-text-subtle)',
-                      textAlign: 'center',
-                      marginTop: 'var(--space-2)',
-                    }}
-                  >
-                    Directly message {poster.name || 'the alumnus'} for an employee referral.
-                  </p>
+                  {hasRequested ? (
+                    <div
+                      style={{
+                        padding: 'var(--space-4)',
+                        backgroundColor: 'var(--color-bg-subtle)',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--color-border)',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 'var(--font-size-xs)',
+                          textTransform: 'uppercase',
+                          fontWeight: 'bold',
+                          color: 'var(--color-primary)',
+                          marginBottom: 'var(--space-2)',
+                        }}
+                      >
+                        Referral Request Submitted
+                      </div>
+                      <div
+                        style={{
+                          display: 'inline-block',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: 'var(--font-size-sm)',
+                          fontWeight: 'var(--font-weight-semibold)',
+                          backgroundColor:
+                            existingReferralStatus === 'ACCEPTED'
+                              ? '#dcfce7'
+                              : existingReferralStatus === 'REJECTED'
+                              ? '#f1f5f9'
+                              : existingReferralStatus === 'REVIEWED'
+                              ? '#e0f2fe'
+                              : '#fef3c7',
+                          color:
+                            existingReferralStatus === 'ACCEPTED'
+                              ? '#166534'
+                              : existingReferralStatus === 'REJECTED'
+                              ? '#475569'
+                              : existingReferralStatus === 'REVIEWED'
+                              ? '#0369a1'
+                              : '#92400e',
+                          marginBottom: 'var(--space-3)',
+                        }}
+                      >
+                        Status: {existingReferralStatus || 'PENDING'}
+                      </div>
+                      <div>
+                        <Link to="/referrals/my" style={{ textDecoration: 'none' }}>
+                          <Button variant="outline" size="sm" block>
+                            Track In My Referrals →
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant="primary"
+                        block
+                        size="lg"
+                        onClick={() => setIsModalOpen(true)}
+                      >
+                        🤝 Request Internal Referral
+                      </Button>
+                      <p
+                        style={{
+                          fontSize: 'var(--font-size-xs)',
+                          color: 'var(--color-text-subtle)',
+                          textAlign: 'center',
+                          marginTop: 'var(--space-2)',
+                        }}
+                      >
+                        Directly message {poster.name || 'the alumnus'} for an employee referral.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
 

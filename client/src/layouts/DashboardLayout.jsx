@@ -16,11 +16,19 @@ export default function DashboardLayout({ defaultRole }) {
   // Infer active role: route-specific overrides or authenticated user role
   let currentRole = defaultRole;
   if (!currentRole) {
-    if (location.pathname.startsWith('/alumni')) {
+    if (
+      location.pathname.startsWith('/alumni') ||
+      location.pathname.startsWith('/referrals/received') ||
+      location.pathname.startsWith('/jobs/my') ||
+      location.pathname.startsWith('/jobs/create')
+    ) {
       currentRole = 'ALUMNI';
     } else if (location.pathname.startsWith('/admin')) {
       currentRole = 'ADMIN';
-    } else if (location.pathname.startsWith('/student')) {
+    } else if (
+      location.pathname.startsWith('/student') ||
+      location.pathname.startsWith('/referrals/my')
+    ) {
       currentRole = 'STUDENT';
     } else {
       currentRole = user?.role || 'STUDENT';
@@ -33,8 +41,9 @@ export default function DashboardLayout({ defaultRole }) {
       title: 'Student Hub',
       items: [
         { label: 'Overview', path: '/student', icon: '📊', exact: true },
-        { label: 'Find Mentors', path: '/student#mentors', icon: '🤝', badge: '3 Available' },
         { label: 'Job Opportunities', path: '/jobs', icon: '💼' },
+        { label: 'My Referrals', path: '/referrals/my', icon: '🤝' },
+        { label: 'Find Mentors', path: '/student#mentors', icon: '🎓', badge: '3 Available' },
         { label: 'My Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -44,6 +53,7 @@ export default function DashboardLayout({ defaultRole }) {
         { label: 'Overview', path: '/alumni', icon: '📊', exact: true },
         { label: 'Job Board', path: '/jobs', icon: '💼' },
         { label: 'My Job Postings', path: '/jobs/my', icon: '📋' },
+        { label: 'Referral Requests', path: '/referrals/received', icon: '📥' },
         { label: 'Mentorship Requests', path: '/alumni#requests', icon: '🎓', badge: '2 Pending' },
         { label: 'Public Profile', path: '/profile', icon: '👤' },
       ],

@@ -410,7 +410,11 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
         designation: alumniProfile.designation || null,
         industry: alumniProfile.industry || null,
         branch: alumniProfile.branch || null,
+        college: alumniProfile.college || null,
         graduationYear: alumniProfile.graduationYear || null,
+        bio: alumniProfile.bio || null,
+        linkedinUrl: alumniProfile.linkedinUrl || null,
+        skills: alumniSkills,
         matchScore: totalScore,
         matchedSkills,
         reason: generateMatchReason({

@@ -156,8 +156,21 @@ async function updateUserStatus(targetUserId, isActive, adminUserId) {
   return updatedUser;
 }
 
+async function getPlatformStats() {
+  const [users, students, alumni, jobPosts, mentorshipRequests, events] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { role: 'STUDENT' } }),
+    prisma.user.count({ where: { role: 'ALUMNI' } }),
+    prisma.jobPost.count(),
+    prisma.mentorshipRequest.count(),
+    prisma.event.count(),
+  ]);
+  return { users, students, alumni, jobPosts, mentorshipRequests, events };
+}
+
 module.exports = {
   listAllUsers,
   getUserDetails,
   updateUserStatus,
+  getPlatformStats,
 };

@@ -10,7 +10,7 @@ import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, totalPages: 1 });
+  const [stats, setStats] = useState({ users: 0, students: 0, alumni: 0, jobPosts: 0, mentorshipRequests: 0, events: 0 });
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,9 +40,6 @@ export default function AdminDashboard() {
       const response = await adminService.getUsers(params);
       if (response.data) {
         setUsers(response.data.users || []);
-        setPagination(
-          response.data.pagination || { total: response.data.users.length, page: 1, limit: 50, totalPages: 1 }
-        );
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch users directory.');
@@ -54,15 +51,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let isMounted = true;
-    adminService
-      .getUsers({ page: 1, limit: 50 })
-      .then((response) => {
+    Promise.all([adminService.getUsers({ page: 1, limit: 50 }), adminService.getStats()])
+      .then(([response, statsResponse]) => {
         if (!isMounted) return;
+        if (statsResponse.data?.stats) setStats(statsResponse.data.stats);
         if (response.data) {
           setUsers(response.data.users || []);
-          setPagination(
-            response.data.pagination || { total: response.data.users.length, page: 1, limit: 50, totalPages: 1 }
-          );
         }
       })
       .catch((err) => {
@@ -124,10 +118,7 @@ export default function AdminDashboard() {
   };
 
   // Derive actual metrics strictly from live database counts
-  const totalUsers = pagination.total || users.length;
-  const studentCount = users.filter((u) => u.role === 'STUDENT').length;
-  const alumniCount = users.filter((u) => u.role === 'ALUMNI').length;
-  const activeCount = users.filter((u) => u.isActive).length;
+  const totalUsers = stats.users;
 
   if (loading) {
     return <Loading text="Loading administration console..." fullScreen={false} />;
@@ -151,7 +142,7 @@ export default function AdminDashboard() {
         </div>
         <div className="system-health-badge">
           <span className="health-dot" />
-          <span>API & PostgreSQL: Connected</span>
+            <span>Live platform statistics</span>
         </div>
       </div>
 
@@ -177,22 +168,22 @@ export default function AdminDashboard() {
         />
         <StatCard
           title="Student Accounts"
-          value={studentCount}
+          value={stats.students}
           subtitle="Enrolled undergraduates"
           icon="🎒"
           variant="neutral"
         />
         <StatCard
           title="Alumni Accounts"
-          value={alumniCount}
+          value={stats.alumni}
           subtitle="Graduated industry members"
           icon="🎓"
           variant="success"
         />
         <StatCard
-          title="Active Accounts"
-          value={activeCount}
-          subtitle={`${Math.round((activeCount / (totalUsers || 1)) * 100)}% platform health`}
+          title="Jobs · Mentorship · Events"
+          value={`${stats.jobPosts} · ${stats.mentorshipRequests} · ${stats.events}`}
+          subtitle="Total platform activity"
           icon="🛡️"
           variant="warning"
         />

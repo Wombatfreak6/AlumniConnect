@@ -222,7 +222,7 @@ export default function AlumniDashboard() {
           <p className="module-desc">
             Post hiring openings from your organization, manage your active listings, and review student referral inquiries.
           </p>
-          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             <Link to="/jobs/create">
               <Button size="sm" variant="primary">
                 + Post Job
@@ -231,6 +231,11 @@ export default function AlumniDashboard() {
             <Link to="/jobs/my">
               <Button size="sm" variant="outline">
                 My Postings
+              </Button>
+            </Link>
+            <Link to="/referrals/received">
+              <Button size="sm" variant="outline">
+                Referral Requests
               </Button>
             </Link>
           </div>

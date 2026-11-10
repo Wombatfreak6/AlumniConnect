@@ -206,10 +206,15 @@ export default function StudentDashboard() {
           <p className="module-desc">
             Direct referral pipeline to request internal company applications from alumni. Browse active openings and receive personalized matching recommendations.
           </p>
-          <div className="module-footer">
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)' }}>
             <Link to="/jobs">
               <Button size="sm" variant="primary">
-                Browse Job Board →
+                Browse Jobs →
+              </Button>
+            </Link>
+            <Link to="/referrals/my">
+              <Button size="sm" variant="outline">
+                My Referrals
               </Button>
             </Link>
           </div>

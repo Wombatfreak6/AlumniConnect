@@ -11,6 +11,7 @@ export default function Button({
   variant = 'primary',
   size = 'md',
   block = false,
+  fullWidth = false,
   isLoading = false,
   disabled = false,
   type = 'button',
@@ -23,7 +24,7 @@ export default function Button({
     'btn',
     `btn-${variant}`,
     `btn-${size}`,
-    block ? 'btn-block' : '',
+    block || fullWidth ? 'btn-block' : '',
     className,
   ]
     .filter(Boolean)

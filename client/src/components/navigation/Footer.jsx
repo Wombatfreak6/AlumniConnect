@@ -26,8 +26,8 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/student">Student Hub</Link></li>
               <li><Link to="/profile">My Profile</Link></li>
-              <li><Link to="/student">Find Mentors</Link></li>
-              <li><Link to="/student">Explore Jobs</Link></li>
+              <li><Link to="/mentorship">Find Mentors</Link></li>
+              <li><Link to="/jobs">Explore Jobs</Link></li>
             </ul>
           </div>
 
@@ -35,8 +35,8 @@ export default function Footer() {
             <h5>Alumni</h5>
             <ul className="footer-links">
               <li><Link to="/alumni">Alumni Portal</Link></li>
-              <li><Link to="/alumni">Offer Mentorship</Link></li>
-              <li><Link to="/alumni">Post Referrals</Link></li>
+              <li><Link to="/mentorship/manage">Offer Mentorship</Link></li>
+              <li><Link to="/jobs/create">Post a Job</Link></li>
               <li><Link to="/profile">Update Career</Link></li>
             </ul>
           </div>

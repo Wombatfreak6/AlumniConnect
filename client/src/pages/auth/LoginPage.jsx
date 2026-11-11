@@ -76,12 +76,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = (email, password) => {
-    setFormData({ email, password });
-    setErrors({});
-    setApiError('');
-  };
-
   return (
     <Card className="auth-form-card">
       <div className="auth-header">
@@ -140,20 +134,6 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      {/* Quick Demo Pre-fill for Reviewers */}
-      <div className="auth-demo-box">
-        <div className="auth-demo-title">Quick Demo Login Pre-fill</div>
-        <div className="auth-demo-buttons">
-          <Button
-            size="sm"
-            variant="outline"
-            type="button"
-            onClick={() => handleQuickFill('admin@alumniconnect.edu', 'Admin@Secure2026!')}
-          >
-            Admin Credentials
-          </Button>
-        </div>
-      </div>
     </Card>
   );
 }

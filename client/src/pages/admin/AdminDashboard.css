@@ -36,6 +36,20 @@
   flex-wrap: wrap;
 }
 
+.admin-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-sm);
+}
+
+@media (max-width: 560px) {
+  .admin-pagination { align-items: flex-start; flex-direction: column; }
+}
+
 .admin-search-wrapper {
   flex: 1;
   min-width: 260px;

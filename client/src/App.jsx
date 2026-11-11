@@ -21,6 +21,7 @@ import StudentReferralsPage from './pages/referrals/StudentReferralsPage';
 import AlumniReferralsPage from './pages/referrals/AlumniReferralsPage';
 import RecommendationsPage from './pages/network/RecommendationsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import { MentorshipPage, MentorshipManagePage, MentorshipDetailsPage, EventsPage, EventFormPage, EventDetailsPage, MyEventsPage } from './pages/community/CommunityPages';
 
 export default function App() {
   return (
@@ -47,6 +48,8 @@ export default function App() {
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/referrals/my" element={<StudentReferralsPage />} />
               <Route path="/network/matches" element={<RecommendationsPage />} />
+              <Route path="/mentorship" element={<MentorshipPage />} />
+              <Route path="/mentorship/requests" element={<MentorshipManagePage />} />
             </Route>
           </Route>
 
@@ -54,6 +57,9 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['ALUMNI', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ALUMNI" />}>
               <Route path="/alumni" element={<AlumniDashboard />} />
+              <Route path="/mentorship/manage" element={<MentorshipManagePage />} />
+              <Route path="/events/create" element={<EventFormPage />} />
+              <Route path="/events/:id/edit" element={<EventFormPage />} />
             </Route>
           </Route>
 
@@ -61,6 +67,8 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ADMIN" />}>
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/events/create" element={<EventFormPage />} />
+              <Route path="/events/:id/edit" element={<EventFormPage />} />
             </Route>
           </Route>
 
@@ -80,6 +88,10 @@ export default function App() {
               <Route path="/jobs" element={<JobBoardPage />} />
               <Route path="/jobs/:id" element={<JobDetailsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/mentorship/slots/:id" element={<MentorshipDetailsPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/events/my" element={<MyEventsPage />} />
+              <Route path="/events/:id" element={<EventDetailsPage />} />
             </Route>
           </Route>
         </Routes>

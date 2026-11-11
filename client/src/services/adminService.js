@@ -5,6 +5,9 @@ import api from './api';
  * Interacts with /api/admin endpoints (strictly restricted to ADMIN role).
  */
 export const adminService = {
+  async getStats() {
+    return api.get('/admin/stats');
+  },
   /**
    * Fetch paginated and filtered users list
    * @param {{

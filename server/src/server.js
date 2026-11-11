@@ -1,6 +1,7 @@
 const app = require('./app');
 const config = require('./config');
 const { connectDB, disconnectDB } = require('./config/database');
+const { flushEmailDeliveries } = require('./modules/notifications/notifications.service');
 
 let server;
 
@@ -17,6 +18,7 @@ async function handleShutdown(signal) {
   }
 
   try {
+    await flushEmailDeliveries();
     await disconnectDB();
     console.log('[Server] Graceful shutdown completed cleanly');
     process.exit(0);

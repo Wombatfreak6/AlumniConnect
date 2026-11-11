@@ -185,11 +185,11 @@ export default function StudentDashboard() {
         </Card>
       </div>
 
-      {/* 4. Future Modules Navigation & Placeholders */}
+      {/* 4. Connected community modules */}
       <div className="modules-header">
-        <h2 className="modules-title">Platform Capabilities & Roadmapped Modules</h2>
+        <h2 className="modules-title">Your AlumniConnect Community</h2>
         <p className="modules-subtitle">
-          Modules under active development by your AlumniConnect engineering team
+          Find guidance, build your network, and join campus events.
         </p>
       </div>
 
@@ -241,51 +241,50 @@ export default function StudentDashboard() {
           </div>
         </Card>
 
-        {/* Navigation to Mentorship Placeholder */}
+        {/* Mentorship */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">🤝</span>
-            <span className="module-status-badge badge-phase">Phase 3 • Member 3</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">1-on-1 Alumni Mentorship</h3>
           <p className="module-desc">
-            Structured advisory sessions and smart alumni matching. Member 3 is building the
-            MentorshipSlot calendar availability and booking request management engine.
+            Browse alumni office hours, review mentor expertise, and send a focused guidance request.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Coming in Phase 3</span>
+            <Link to="/mentorship"><Button size="sm">Find a mentor</Button></Link>
+            <Link to="/mentorship/requests"><Button size="sm" variant="outline">My requests</Button></Link>
           </div>
         </Card>
 
-        {/* Navigation to Networking Placeholder */}
+        {/* Network matches */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">👥</span>
-            <span className="module-status-badge badge-future">Upcoming</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
-          <h3 className="module-name">Alumni Network Directory</h3>
+          <h3 className="module-name">Alumni Network Matches</h3>
           <p className="module-desc">
-            Branch and batch-wise alumni directory discovery to connect with graduated seniors across
-            global technology and research firms.
+            Explore alumni ranked by shared skills, academic background, and career interests.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Network Discovery</span>
+            <Link to="/network/matches"><Button size="sm" variant="outline">Explore matches</Button></Link>
           </div>
         </Card>
 
-        {/* Navigation to Events Placeholder */}
+        {/* Events */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">📅</span>
-            <span className="module-status-badge badge-future">Upcoming</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">Campus Events & Webinars</h3>
           <p className="module-desc">
-            Collegiate tech talks, virtual webinars, alumni roundtables, and career workshops
-            managed collaboratively with college administration.
+            Browse campus workshops, career sessions, alumni talks, and networking events.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Events Engine</span>
+            <Link to="/events"><Button size="sm" variant="outline">Browse events</Button></Link>
+            <Link to="/events/my"><Button size="sm" variant="outline">My events</Button></Link>
           </div>
         </Card>
       </div>

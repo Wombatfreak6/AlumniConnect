@@ -12,6 +12,9 @@ const jobsRoutes = require('./modules/jobs/jobs.routes');
 const referralsRoutes = require('./modules/referrals/referrals.routes');
 const referralsController = require('./modules/referrals/referrals.controller');
 const networkRoutes = require('./modules/network/network.routes');
+const mentorshipRoutes = require('./modules/mentorship/mentorship.routes');
+const eventsRoutes = require('./modules/events/events.routes');
+const notificationsRoutes = require('./modules/notifications/notifications.routes');
 const { authenticateToken, authorizeRoles } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -86,6 +89,9 @@ app.use('/api/referrals', referralsRoutes);
 
 // Intelligent network matching & recommendations
 app.use('/api/network', networkRoutes);
+app.use('/api/mentorship', mentorshipRoutes);
+app.use('/api/events', eventsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Direct alumni and student referral endpoints (as specified in Handover spec)
 app.get(

@@ -34,6 +34,8 @@ export const jobService = {
    * @param {{
    *   search?: string,
    *   company?: string,
+   *   location?: string,
+   *   skill?: string,
    *   employmentType?: 'FULL_TIME' | 'PART_TIME' | 'INTERNSHIP' | 'CONTRACT' | 'REMOTE',
    *   experienceLevel?: 'ENTRY' | 'MID' | 'SENIOR' | 'LEAD',
    *   page?: number,

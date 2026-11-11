@@ -9,7 +9,8 @@ async function getJobRecommendations(req, res, next) {
   try {
     const studentId = req.user.userId || req.user.id;
     const limit = Math.max(1, Math.min(50, parseInt(req.query.limit, 10) || 20));
-    const minScore = Math.max(0, parseInt(req.query.minScore, 10) || 0);
+    const parsedMinScore = Number.parseInt(req.query.minScore, 10);
+    const minScore = Number.isFinite(parsedMinScore) ? Math.max(0, Math.min(100, parsedMinScore)) : 1;
 
     const recommendations = await matchingService.getJobRecommendations(studentId, {
       limit,
@@ -35,7 +36,8 @@ async function getAlumniMatches(req, res, next) {
   try {
     const studentId = req.user.userId || req.user.id;
     const limit = Math.max(1, Math.min(50, parseInt(req.query.limit, 10) || 20));
-    const minScore = Math.max(0, parseInt(req.query.minScore, 10) || 0);
+    const parsedMinScore = Number.parseInt(req.query.minScore, 10);
+    const minScore = Number.isFinite(parsedMinScore) ? Math.max(0, Math.min(100, parsedMinScore)) : 1;
 
     const matches = await matchingService.getAlumniMatches(studentId, {
       limit,

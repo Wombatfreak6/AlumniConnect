@@ -92,6 +92,20 @@ function calculateSkillScore(studentSkills = [], requiredSkills = []) {
   };
 }
 
+/** Alumni relevance uses the share of a student's skills represented by the alumnus. */
+function calculateAlumniSkillScore(studentSkills = [], alumniSkills = []) {
+  if (!Array.isArray(studentSkills) || studentSkills.length === 0 || !Array.isArray(alumniSkills)) {
+    return { score: 0, matchedSkills: [], totalStudentSkills: 0 };
+  }
+  const alumniSet = new Set(alumniSkills.map((skill) => normalizeText(skill)));
+  const matchedSkills = studentSkills.filter((skill) => alumniSet.has(normalizeText(skill)));
+  return {
+    score: Math.round((matchedSkills.length / studentSkills.length) * MATCHING_WEIGHTS.SKILLS),
+    matchedSkills,
+    totalStudentSkills: studentSkills.length,
+  };
+}
+
 /**
  * 2. ACADEMIC BRANCH ALIGNMENT (Max: 30 points)
  * Exact normalized match = 30 points, no match = 0 points.
@@ -249,7 +263,7 @@ async function getStudentMatchingContext(studentId) {
  * GET /api/jobs/recommendations
  * Matches and ranks available jobs for the currently authenticated student.
  */
-async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {}) {
+async function getJobRecommendations(studentId, { minScore = 1, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
@@ -266,7 +280,6 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
         select: {
           id: true,
           name: true,
-          email: true,
           profile: {
             select: {
               company: true,
@@ -358,7 +371,7 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
  * GET /api/network/matches
  * Matches and ranks alumni peers for networking based on skill, branch, and industry.
  */
-async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
+async function getAlumniMatches(studentId, { minScore = 1, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
@@ -384,7 +397,7 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
     const alumniSkills = (alumni.userSkills || []).map((us) => us.skill.name);
 
     // A. Skill overlap against alumni's skills
-    const { score: skillScore, matchedSkills } = calculateSkillScore(
+    const { score: skillScore, matchedSkills } = calculateAlumniSkillScore(
       studentSkills,
       alumniSkills
     );
@@ -405,7 +418,6 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
       matches.push({
         alumniId: alumni.id,
         name: alumni.name,
-        email: alumni.email,
         company: alumniProfile.company || null,
         designation: alumniProfile.designation || null,
         industry: alumniProfile.industry || null,
@@ -445,6 +457,7 @@ module.exports = {
   extractKeywords,
   detectSkillsInText,
   calculateSkillScore,
+  calculateAlumniSkillScore,
   calculateBranchScore,
   calculateIndustryScore,
   generateMatchReason,

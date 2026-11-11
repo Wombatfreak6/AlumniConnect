@@ -88,8 +88,18 @@ async function updateStatus(req, res, next) {
   }
 }
 
+async function getStats(req, res, next) {
+  try {
+    const stats = await adminService.getPlatformStats();
+    res.status(200).json({ success: true, data: { stats } });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getUsers,
   getUserById,
   updateStatus,
+  getStats,
 };

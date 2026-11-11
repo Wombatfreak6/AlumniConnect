@@ -11,11 +11,11 @@ const config = require('../src/config');
 async function seedAdmin() {
   console.log('--- Initializing Admin User Seed ---');
 
-  const adminEmail = (config.adminEmail || process.env.ADMIN_EMAIL || 'admin@alumniconnect.edu').trim().toLowerCase();
-  const adminPassword = config.adminPassword || process.env.ADMIN_PASSWORD || 'Admin@Secure2026!';
+  const adminEmail = (config.adminEmail || process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const adminPassword = config.adminPassword || process.env.ADMIN_PASSWORD || '';
 
-  if (!adminEmail || !adminPassword) {
-    throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be configured.');
+  if (!adminEmail || !adminPassword || adminPassword.length < 12 || !/[A-Z]/.test(adminPassword) || !/[a-z]/.test(adminPassword) || !/\d/.test(adminPassword) || !/[^A-Za-z0-9]/.test(adminPassword)) {
+    throw new Error('Set ADMIN_EMAIL and a unique ADMIN_PASSWORD with at least 12 characters, uppercase, lowercase, a number, and a symbol.');
   }
 
   // Hash admin password with salt rounds = 10

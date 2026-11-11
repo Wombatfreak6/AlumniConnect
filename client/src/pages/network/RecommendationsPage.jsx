@@ -309,7 +309,7 @@ export default function RecommendationsPage() {
                       </a>
                     ) : (
                       <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                        ✉️ {alumnus.email || 'Contact via Platform'}
+                        Contact via AlumniConnect
                       </span>
                     )}
 

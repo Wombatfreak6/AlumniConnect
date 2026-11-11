@@ -82,27 +82,20 @@ async function getMyProfile(userId) {
  * Updates the authenticated user's profile and optional display name.
  */
 async function updateMyProfile(userId, { profileData, userName }) {
-  // 1. Update User name if supplied
-  if (userName) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { name: userName },
+  await prisma.$transaction(async (tx) => {
+    if (userName) {
+      await tx.user.update({ where: { id: userId }, data: { name: userName } });
+    }
+    await tx.profile.upsert({
+      where: { userId },
+      update: profileData,
+      create: { userId, ...profileData },
     });
-  }
-
-  // 2. Upsert profile data
-  await prisma.profile.upsert({
-    where: { userId },
-    update: profileData,
-    create: {
-      userId,
-      ...profileData,
-    },
   });
 
   // 3. Return refreshed user profile
   const updatedUser = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: userId, isActive: true },
     select: SAFE_USER_SELECT,
   });
 
@@ -115,13 +108,11 @@ async function updateMyProfile(userId, { profileData, userName }) {
  */
 async function getPublicProfileById(userId) {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: userId, isActive: true },
     select: {
       id: true,
       name: true,
-      email: true,
       role: true,
-      isActive: true,
       createdAt: true,
       profile: true,
       userSkills: {
@@ -138,7 +129,7 @@ async function getPublicProfileById(userId) {
     },
   });
 
-  if (!user || !user.isActive) {
+  if (!user) {
     const error = new Error('User not found.');
     error.statusCode = 404;
     throw error;

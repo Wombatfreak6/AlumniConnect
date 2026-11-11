@@ -12,7 +12,7 @@ const errorMiddleware = (err, req, res, next) => {
   }
 
   // Handle Prisma specific errors
-  let message = err.message || 'Internal Server Error';
+  let message = statusCode >= 500 ? 'An unexpected server error occurred.' : (err.message || 'Request failed.');
   if (err.code === 'P2002') {
     statusCode = 409;
     message = 'A record with this unique constraint already exists.';

@@ -6,22 +6,25 @@
 
 ## What changed
 
-- Added authenticated mentorship endpoints in `server/src/modules/mentorship/` using the existing `MentorshipSlot`, `MentorshipRequest`, and enums. No schema change or migration was needed.
-- Added authenticated event endpoints in `server/src/modules/events/` using the existing `Event`, `EventRegistration`, and enums. No schema change or migration was needed.
+- Added authenticated mentorship endpoints in `server/src/modules/mentorship/` using the existing `MentorshipSlot`, `MentorshipRequest`, and enums.
+- Added authenticated event endpoints in `server/src/modules/events/` using the existing `Event`, `EventRegistration`, and enums.
 - Added `GET /api/admin/stats` for live user, job, mentorship request, and event counts; the existing admin dashboard now uses database counts instead of a hard-coded connected status.
 - Registered both routers in `server/src/app.js`.
 - Added `communityService.js`, responsive community pages and protected React routes for mentor search, availability, requests, event browsing, details, registration, organizer editing, and participant lists.
 - Integrated mentorship and event navigation with the existing role dashboards and design tokens.
+- Added persisted notifications, a per-user Server-Sent Events stream, notification inbox controls, and optional SMTP email delivery. Notification migration: `20261111132645_add_notifications`.
 
 ## API endpoints
 
-All endpoints require the existing JWT cookie or bearer token.
+Endpoints marked for signed-in users require the existing JWT cookie or bearer token; public endpoints are identified in the combined API inventory.
 
 ### Mentorship
 
 | Method | Path | Access | Purpose |
 |---|---|---|---|
 | GET | `/api/mentorship/slots?skill=&expertise=` | Any signed-in user | Browse future available slots |
+| GET | `/api/mentorship/slots/my` | ALUMNI | List own future slots |
+| GET | `/api/mentorship/slots/:id` | Any signed-in user | View slot and sanitized mentor details |
 | POST | `/api/mentorship/slots` | ALUMNI | Create a future slot |
 | PUT | `/api/mentorship/slots/:id` | Owner ALUMNI or ADMIN | Update an unbooked slot |
 | DELETE | `/api/mentorship/slots/:id` | Owner ALUMNI or ADMIN | Cancel a slot |
@@ -29,6 +32,17 @@ All endpoints require the existing JWT cookie or bearer token.
 | GET | `/api/mentorship/requests/sent` | STUDENT | View sent requests |
 | GET | `/api/mentorship/requests/received` | ALUMNI or ADMIN | View incoming requests |
 | PATCH | `/api/mentorship/requests/:id/status` | Requesting STUDENT, slot owner ALUMNI, or ADMIN | Cancel as student, accept/reject as slot owner |
+
+### Notifications
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/notifications` | Any signed-in user | List own notifications and unread count |
+| GET | `/api/notifications/stream` | Authenticated cookie session | Receive real-time notification events |
+| PATCH | `/api/notifications/:id/read` | Owner | Mark one notification read |
+| PATCH | `/api/notifications/read-all` | Any signed-in user | Mark all own notifications read |
+
+SMTP email is optional. Configure the `SMTP_*` variables in `server/.env`; without SMTP, in-app delivery still works.
 
 ### Administration
 
@@ -71,10 +85,10 @@ Duplicate registrations are rejected; cancelled users can register again. The da
 - `client`: `npm run lint` passed with no warnings; `npm run build` passed.
 - `server`: `npx prisma validate` passed; `node --check` passed for new backend modules and `server/src/app.js`.
 - `git diff --check` passed.
-- Database-backed/API workflows were not run because no PostgreSQL test database or credentials were supplied. Do not describe those workflows as tested until they run against a configured database.
+- The repeatable integration smoke suite runs against `TEST_DATABASE_URL`, which must point to a dedicated database ending in `_test`; it verifies 67 API, authorization, real-time notification, local SMTP delivery, and concurrency checks. Configure SMTP credentials separately to deliver to real email inboxes.
 
 ## Remaining handover items
 
-- Member 1's handover document was not present in this repository; Member 2's handover is at `docs/MEMBER_2_HANDOVER.md`.
+- Member 1 foundation notes and the combined API inventory are in `docs/MEMBER_1_HANDOVER.md` and `docs/API_REFERENCE.md`.
 - The feature branch was pushed; a pull request was not opened because the connected GitHub integration returned 403 and the browser origin approval was declined. Create the PR from the compare page after access is available.
-- Existing admin dashboard currently covers user administration. Dedicated job moderation and combined live activity metrics are not part of this change.
+- Admin dashboard includes separate live counts for students, alumni, users, job posts, mentorship requests, and events, plus paginated user management and recent job moderation. Events are managed from the event browse/detail pages; admins can edit/delete any event.

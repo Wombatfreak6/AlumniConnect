@@ -201,11 +201,11 @@ export default function AlumniDashboard() {
         </Card>
       </div>
 
-      {/* 4. Future Modules Navigation & Clear Placeholders */}
+      {/* 4. Community management */}
       <div className="modules-header">
         <h2 className="modules-title">Alumni Engagement Modules</h2>
         <p className="modules-subtitle">
-          Modules under active development by your AlumniConnect engineering team
+          Share your experience and create opportunities for students.
         </p>
       </div>
 
@@ -241,35 +241,34 @@ export default function AlumniDashboard() {
           </div>
         </Card>
 
-        {/* Navigation to Mentorship Placeholder */}
+        {/* Mentorship management */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">🎓</span>
-            <span className="module-status-badge badge-phase">Phase 3 • Member 3</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">Mentorship & Office Hours</h3>
           <p className="module-desc">
-            Configure weekly office hours, accept mentee guidance requests, and schedule 1-on-1 sessions.
-            Member 3 is actively developing the MentorshipSlot booking module.
+            Publish upcoming office hours, update your availability, and respond to student requests.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Mentorship Engine</span>
+            <Link to="/mentorship/manage"><Button size="sm">Manage mentorship</Button></Link>
           </div>
         </Card>
 
-        {/* Navigation to Events Placeholder */}
+        {/* Event management */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">📅</span>
-            <span className="module-status-badge badge-future">Upcoming</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">Campus Events & Tech Talks</h3>
           <p className="module-desc">
-            Participate in university panels, host virtual engineering seminars, and register for
-            campus alumni reunions organized with institutional administration.
+            Host workshops and networking events, then review participant registrations.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Events Engine</span>
+            <Link to="/events"><Button size="sm" variant="outline">Browse events</Button></Link>
+            <Link to="/events/create"><Button size="sm">Create event</Button></Link>
           </div>
         </Card>
       </div>

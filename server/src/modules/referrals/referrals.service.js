@@ -1,5 +1,6 @@
 const { prisma } = require('../../config/database');
 const { validateStatusTransition } = require('./referrals.validation');
+const { notifySafely } = require('../notifications/notifications.service');
 
 /**
  * Common format function to cleanly present student skills in referral responses.
@@ -101,6 +102,14 @@ async function createReferral({ studentId, jobPostId, message }) {
         },
       },
     },
+  });
+
+  await notifySafely({
+    userId: job.postedById,
+    type: 'REFERRAL_RECEIVED',
+    title: 'New referral request',
+    message: `A student requested a referral for ${job.title}.`,
+    href: '/referrals/received',
   });
 
   return referral;
@@ -312,6 +321,14 @@ async function updateReferralStatus(referralId, newStatus, currentUserId) {
         },
       },
     },
+  });
+
+  await notifySafely({
+    userId: updatedReferral.studentId,
+    type: 'REFERRAL_STATUS',
+    title: 'Referral status updated',
+    message: `Your referral request for ${updatedReferral.jobPost.title} was ${newStatus.toLowerCase()}.`,
+    href: '/referrals/my',
   });
 
   return updatedReferral;

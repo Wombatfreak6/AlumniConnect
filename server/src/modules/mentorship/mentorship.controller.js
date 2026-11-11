@@ -2,11 +2,13 @@ const service = require('./mentorship.service');
 const idOf = (value) => /^\d+$/.test(value) && Number(value) > 0 ? Number(value) : null;
 const respond = (res, data, message = 'Request completed.') => res.json({ success: true, message, data });
 
-async function slots(req, res, next) { try { respond(res, { slots: await service.listSlots({ skill: req.query.skill, expertise: req.query.expertise }) }); } catch (e) { next(e); } }
+async function slots(req, res, next) { try { respond(res, { slots: await service.listSlots({ skill: req.query.skill, expertise: req.query.expertise, studentId: req.user.id }) }); } catch (e) { next(e); } }
+async function mySlots(req, res, next) { try { respond(res, { slots: await service.getMySlots(req.user.id) }); } catch (e) { next(e); } }
+async function getSlot(req, res, next) { try { const id = idOf(req.params.id); if (!id) return res.status(400).json({ success: false, message: 'Invalid slot id.' }); respond(res, { slot: await service.getSlot(id, req.user.id) }); } catch (e) { next(e); } }
 async function createSlot(req, res, next) { try { if (!req.body.topic || !req.body.startTime || !req.body.endTime) return res.status(400).json({ success: false, message: 'topic, startTime and endTime are required.' }); const slot = await service.createSlot(req.user.id, req.body); res.status(201); respond(res, { slot }, 'Mentorship slot created.'); } catch (e) { next(e); } }
 async function updateSlot(req, res, next) { try { const id = idOf(req.params.id); if (!id) return res.status(400).json({ success: false, message: 'Invalid slot id.' }); respond(res, { slot: await service.updateSlot(id, req.user.id, req.body, req.user.role) }); } catch (e) { next(e); } }
 async function deleteSlot(req, res, next) { try { const id = idOf(req.params.id); if (!id) return res.status(400).json({ success: false, message: 'Invalid slot id.' }); await service.deleteSlot(id, req.user.id, req.user.role); respond(res, {}, 'Mentorship slot cancelled.'); } catch (e) { next(e); } }
 async function createRequest(req, res, next) { try { const slotId = idOf(req.body.slotId); if (!slotId) return res.status(400).json({ success: false, message: 'A valid slotId is required.' }); const request = await service.createRequest(req.user.id, slotId, req.body.message); res.status(201); respond(res, { request }, 'Mentorship request sent.'); } catch (e) { next(e); } }
 async function requests(req, res, next) { try { respond(res, { requests: await service.getRequests(req.user.id, req.user.role, req.params.direction) }); } catch (e) { next(e); } }
 async function updateRequest(req, res, next) { try { const id = idOf(req.params.id); if (!id) return res.status(400).json({ success: false, message: 'Invalid request id.' }); const request = await service.updateRequest(id, req.user.id, req.user.role, req.body.status); respond(res, { request }); } catch (e) { next(e); } }
-module.exports = { slots, createSlot, updateSlot, deleteSlot, createRequest, requests, updateRequest };
+module.exports = { slots, mySlots, getSlot, createSlot, updateSlot, deleteSlot, createRequest, requests, updateRequest };

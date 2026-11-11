@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 import useAuth from '../../hooks/useAuth';
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 /**
@@ -98,6 +99,7 @@ export default function Navbar() {
           <div className="navbar-actions">
             {isAuthenticated ? (
               <div className="navbar-auth-user">
+                <NotificationBell />
                 <span className="navbar-user-tag">
                   <span className="navbar-user-name">{user?.name}</span>
                   <span className={`badge badge-${user?.role?.toLowerCase()}`}>{user?.role}</span>

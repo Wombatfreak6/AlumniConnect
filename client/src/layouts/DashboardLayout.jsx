@@ -60,6 +60,7 @@ export default function DashboardLayout({ defaultRole }) {
         { label: 'Referral Requests', path: '/referrals/received', icon: '📥' },
         { label: 'Mentorship', path: '/mentorship/manage', icon: '🎓' },
         { label: 'Events', path: '/events', icon: '📅' },
+        { label: 'My Events', path: '/events/my', icon: '🗓️' },
         { label: 'Public Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -68,6 +69,7 @@ export default function DashboardLayout({ defaultRole }) {
       items: [
         { label: 'Platform Metrics', path: '/admin', icon: '📈', exact: true },
         { label: 'Job Board', path: '/jobs', icon: '💼' },
+        { label: 'Mentorship Activity', path: '/mentorship/requests', icon: '🎓' },
         { label: 'Events', path: '/events', icon: '📅' },
         { label: 'User Directory', path: '/admin#users', icon: '👥' },
         { label: 'Access Control', path: '/admin#security', icon: '🛡️' },

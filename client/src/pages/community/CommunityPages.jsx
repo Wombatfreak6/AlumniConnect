@@ -23,16 +23,90 @@ export function MentorshipPage() {
   const { data, error, loading, refresh, setError } = useLoad(() => mentorshipService.getSlots(search ? { skill: search, expertise: search } : {}), [search]);
   const request = async (slotId) => { try { await mentorshipService.request(slotId, message); setNotice('Your mentorship request was sent.'); setMessage(''); await refresh(); } catch (e) { setError(e.message); } };
   return <section className="community-page"><header className="community-header"><div><span className="badge badge-primary">CAREER GUIDANCE</span><h1>Find a mentor</h1><p>Browse alumni office hours and request a focused conversation.</p></div><Link to={user?.role === 'ALUMNI' ? '/mentorship/manage' : '/mentorship/requests'}><Button variant="outline">{user?.role === 'ALUMNI' ? 'Manage availability' : 'My requests'}</Button></Link></header>
-    <Input label="Search by skill or topic" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. product design, finance" />{notice && <p className="community-notice">{notice}</p>}{error && <ErrorAlert message={error} />}{loading ? <Loading text="Finding available mentors…" /> : <div className="community-grid">{(data?.data?.slots || []).map((slot) => <article className="community-card" key={slot.id}><div className="community-card-top"><span className="badge badge-success">AVAILABLE</span><span>{dateTime(slot.startTime)}</span></div><h2>{slot.topic}</h2><h3>{slot.alumni.name}</h3><p>{slot.description || 'Connect with an experienced alumni mentor.'}</p><p><strong>Expertise:</strong> {slot.expertise || slot.alumni.profile?.industry || 'General career guidance'}</p>{slot.alumni.profile?.company && <p>{slot.alumni.profile.designation} at {slot.alumni.profile.company}</p>}{user?.role === 'STUDENT' && <div className="community-actions"><Textarea label="What would you like help with?" value={message} onChange={(e) => setMessage(e.target.value)} rows={2} /><Button onClick={() => request(slot.id)}>Request session</Button></div>}</article>)}{!data?.data?.slots?.length && <p className="community-empty">No upcoming mentorship slots match your search.</p>}</div>}</section>;
+    <Input label="Search by skill, industry, company, or topic" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. product design, finance" />{notice && <p className="community-notice">{notice}</p>}{error && <ErrorAlert message={error} />}{loading ? <Loading text="Finding available mentors…" /> : <div className="community-grid">{(data?.data?.slots || []).map((slot) => <article className="community-card" key={slot.id}><div className="community-card-top"><span className="badge badge-success">AVAILABLE</span><span>{dateTime(slot.startTime)}</span></div><h2><Link to={`/mentorship/slots/${slot.id}`}>{slot.topic}</Link></h2><h3>{slot.alumni.name}</h3><p>{slot.description || 'Connect with an experienced alumni mentor.'}</p><p><strong>Expertise:</strong> {slot.expertise || slot.alumni.profile?.industry || 'General career guidance'}</p>{slot.alumni.profile?.company && <p>{slot.alumni.profile.designation} at {slot.alumni.profile.company}</p>}<Link className="community-link" to={`/mentorship/slots/${slot.id}`}>View mentor and slot details →</Link>{user?.role === 'STUDENT' && (slot.requests?.length ? <span className="badge">{slot.requests[0].status}</span> : <div className="community-actions"><Textarea label="What would you like help with?" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} rows={2} /><Button onClick={() => request(slot.id)}>Request session</Button></div>)}</article>)}{!data?.data?.slots?.length && <p className="community-empty">No upcoming mentorship slots match your search.</p>}</div>}</section>;
+}
+
+export function MentorshipDetailsPage() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const [message, setMessage] = useState('');
+  const [notice, setNotice] = useState('');
+  const { data, error, loading, setError, refresh } = useLoad(() => mentorshipService.getSlot(id), [id]);
+  const slot = data?.data?.slot;
+  const request = async () => {
+    try {
+      await mentorshipService.request(slot.id, message);
+      setNotice('Your mentorship request was sent.');
+      setMessage('');
+      await refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+  if (loading) return <Loading text="Loading mentor details…" />;
+  if (!slot) return <section className="community-page">{error && <ErrorAlert message={error} />}<Link to="/mentorship">Back to mentors</Link></section>;
+  return <section className="community-page community-narrow">
+    <header className="community-header"><div><span className="badge badge-primary">MENTOR PROFILE</span><h1>{slot.alumni.name}</h1></div><Link to="/mentorship"><Button variant="outline">All mentors</Button></Link></header>
+    {error && <ErrorAlert message={error} />}{notice && <p className="community-notice">{notice}</p>}
+    <article className="community-card"><h2>{slot.topic}</h2><p><strong>When:</strong> {dateTime(slot.startTime)} – {dateTime(slot.endTime)}</p><p>{slot.description || 'Connect with an experienced alumni mentor.'}</p><p><strong>Expertise:</strong> {slot.expertise || slot.alumni.profile?.industry || 'General career guidance'}</p><p><strong>Industry:</strong> {slot.alumni.profile?.industry || 'Not specified'}</p><p><strong>Company:</strong> {slot.alumni.profile?.company || 'Not specified'}{slot.alumni.profile?.designation ? ` · ${slot.alumni.profile.designation}` : ''}</p><p><strong>Branch:</strong> {slot.alumni.profile?.branch || 'Not specified'}{slot.alumni.profile?.graduationYear ? ` · Class of ${slot.alumni.profile.graduationYear}` : ''}</p><p>{slot.alumni.profile?.bio || ''}</p><div className="community-actions-inline">{(slot.alumni.userSkills || []).map(({ skill }) => <span className="badge" key={skill.id}>{skill.name}</span>)}</div>
+      {user?.role === 'STUDENT' && (slot.requests?.length ? <p className="community-notice">Your request status: <strong>{slot.requests[0].status}</strong>. <Link to="/mentorship/requests">Track your requests</Link></p> : <div className="community-actions"><Textarea label="What would you like help with?" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={1000} rows={3} /><Button onClick={request}>Request this session</Button></div>)}
+    </article>
+  </section>;
 }
 
 export function MentorshipManagePage() {
-  const { user } = useAuth(); const { data, error, loading, refresh, setError } = useLoad(() => user?.role === 'ALUMNI' ? mentorshipService.getSlots({}) : mentorshipService.getReceived());
-  const [form, setForm] = useState({ topic: '', expertise: '', description: '', startTime: '', endTime: '' }); const [notice, setNotice] = useState('');
-  const submit = async (e) => { e.preventDefault(); try { await mentorshipService.createSlot({ ...form, startTime: new Date(form.startTime).toISOString(), endTime: new Date(form.endTime).toISOString() }); setForm({ topic: '', expertise: '', description: '', startTime: '', endTime: '' }); setNotice('Availability published.'); await refresh(); } catch (err) { setError(err.message); } };
+  const { user } = useAuth();
+  const alumni = user?.role === 'ALUMNI';
+  const loader = async () => {
+    if (user?.role === 'STUDENT') {
+      const response = await mentorshipService.getSent();
+      return { requests: response.data?.requests || [], slots: [] };
+    }
+    if (!alumni) {
+      const response = await mentorshipService.getReceived();
+      return { requests: response.data?.requests || [], slots: [] };
+    }
+    const [slotsResponse, requestsResponse] = await Promise.all([mentorshipService.getMySlots(), mentorshipService.getReceived()]);
+    return { slots: slotsResponse.data?.slots || [], requests: requestsResponse.data?.requests || [] };
+  };
+  const { data, error, loading, refresh, setError } = useLoad(loader, [user?.role]);
+  const emptyForm = { topic: '', expertise: '', description: '', startTime: '', endTime: '' };
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [notice, setNotice] = useState('');
+  const toLocalDateTime = (value) => {
+    const date = new Date(value);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  };
+  const submit = async (e) => {
+    e.preventDefault();
+    try {
+      const body = { ...form, startTime: new Date(form.startTime).toISOString(), endTime: new Date(form.endTime).toISOString() };
+      if (editingId) await mentorshipService.updateSlot(editingId, body);
+      else await mentorshipService.createSlot(body);
+      setForm(emptyForm);
+      setEditingId(null);
+      setNotice(editingId ? 'Mentorship slot updated.' : 'Availability published.');
+      await refresh();
+    } catch (err) { setError(err.message); }
+  };
   const act = async (id, status) => { try { await mentorshipService.updateRequest(id, status); await refresh(); } catch (e) { setError(e.message); } };
-  const cancel = async (id) => { try { await mentorshipService.deleteSlot(id); await refresh(); } catch (e) { setError(e.message); } };
-  return <section className="community-page"><header className="community-header"><div><span className="badge badge-primary">MENTORSHIP</span><h1>{user?.role === 'ALUMNI' ? 'Mentorship availability' : 'My mentorship requests'}</h1><p>{user?.role === 'ALUMNI' ? 'Publish office hours and manage student requests.' : 'Review or cancel your pending requests.'}</p></div><Link to="/mentorship"><Button variant="outline">Browse mentors</Button></Link></header>{notice && <p className="community-notice">{notice}</p>}{error && <ErrorAlert message={error} />}{user?.role === 'ALUMNI' && <form className="community-form" onSubmit={submit}><h2>Offer a mentorship slot</h2><Input label="Topic" required value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} /><Input label="Expertise" value={form.expertise} onChange={(e) => setForm({ ...form, expertise: e.target.value })} /><Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /><div className="community-form-grid"><Input label="Starts" type="datetime-local" required value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /><Input label="Ends" type="datetime-local" required value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></div><Button type="submit">Publish availability</Button></form>}{loading ? <Loading text="Loading mentorship activity…" /> : <div className="community-list">{(user?.role === 'ALUMNI' ? data?.data?.slots : data?.data?.requests)?.map((item) => { const slot = item.slot || item; return <article className="community-row" key={item.id}><div><h2>{slot.topic}</h2><p>{dateTime(slot.startTime)}{item.student ? ` · Request from ${item.student.name}` : ''}</p>{item.message && <p>{item.message}</p>}<span className="badge">{item.status || slot.status}</span></div><div className="community-actions-inline">{item.status === 'PENDING' && (user?.role === 'ALUMNI' ? <><Button onClick={() => act(item.id, 'ACCEPTED')}>Accept</Button><Button variant="outline" onClick={() => act(item.id, 'REJECTED')}>Decline</Button></> : <Button variant="outline" onClick={() => act(item.id, 'CANCELLED')}>Cancel request</Button>)}{!item.status && slot.status === 'AVAILABLE' && <Button variant="outline" onClick={() => cancel(slot.id)}>Cancel slot</Button>}</div></article>; })}{!(user?.role === 'ALUMNI' ? data?.data?.slots : data?.data?.requests)?.length && <p className="community-empty">Nothing here yet.</p>}</div>}</section>;
+  const cancel = async (id) => { try { await mentorshipService.deleteSlot(id); setNotice('Mentorship slot cancelled.'); await refresh(); } catch (e) { setError(e.message); } };
+  const editSlot = (slot) => {
+    setEditingId(slot.id);
+    setForm({ topic: slot.topic, expertise: slot.expertise || '', description: slot.description || '', startTime: toLocalDateTime(slot.startTime), endTime: toLocalDateTime(slot.endTime) });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  return <section className="community-page">
+    <header className="community-header"><div><span className="badge badge-primary">MENTORSHIP</span><h1>{alumni ? 'Mentorship availability' : user?.role === 'STUDENT' ? 'My mentorship requests' : 'Incoming mentorship requests'}</h1><p>{alumni ? 'Publish office hours and manage your own slots and student requests.' : user?.role === 'STUDENT' ? 'Track or cancel requests you sent to Alumni.' : 'Review requests sent to mentorship slots on the platform.'}</p></div><Link to="/mentorship"><Button variant="outline">Browse mentors</Button></Link></header>
+    {notice && <p className="community-notice">{notice}</p>}{error && <ErrorAlert message={error} />}
+    {alumni && <form className="community-form" onSubmit={submit}><h2>{editingId ? 'Edit mentorship slot' : 'Offer a mentorship slot'}</h2><Input label="Topic" required minLength={3} maxLength={160} value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} /><Input label="Expertise" maxLength={1000} value={form.expertise} onChange={(e) => setForm({ ...form, expertise: e.target.value })} /><Textarea label="Description" maxLength={1000} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /><div className="community-form-grid"><Input label="Starts" type="datetime-local" required value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /><Input label="Ends" type="datetime-local" required value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></div><div className="community-actions-inline"><Button type="submit">{editingId ? 'Save slot' : 'Publish availability'}</Button>{editingId && <Button type="button" variant="outline" onClick={() => { setEditingId(null); setForm(emptyForm); }}>Stop editing</Button>}</div></form>}
+    {loading ? <Loading text="Loading mentorship activity…" /> : <>
+      {alumni && <><h2>Your upcoming slots</h2><div className="community-list">{(data?.slots || []).map((slot) => <article className="community-row" key={slot.id}><div><h3>{slot.topic}</h3><p>{dateTime(slot.startTime)} – {dateTime(slot.endTime)}</p><span className="badge">{slot.status}</span></div><div className="community-actions-inline">{slot.status === 'AVAILABLE' && <><Button variant="outline" onClick={() => editSlot(slot)}>Edit</Button><Button variant="outline" onClick={() => cancel(slot.id)}>Cancel slot</Button></>}</div></article>)}{!data?.slots?.length && <p className="community-empty">You have no upcoming mentorship slots.</p>}</div></>}
+      <h2>{alumni ? 'Requests for your slots' : user?.role === 'STUDENT' ? 'Requests you sent' : 'Incoming requests'}</h2><div className="community-list">{(data?.requests || []).map((item) => { const student = user?.role !== 'STUDENT'; const contact = student ? item.student : item.slot.alumni; return <article className="community-row" key={item.id}><div><h3>{item.slot.topic}</h3><p>{dateTime(item.slot.startTime)} · {student ? `Request from ${contact?.name}` : `Mentor: ${contact?.name}`}</p>{item.message && <p>{item.message}</p>}<span className="badge">{item.status}</span></div><div className="community-actions-inline">{item.status === 'PENDING' && (student ? <><Button onClick={() => act(item.id, 'ACCEPTED')}>Accept</Button><Button variant="outline" onClick={() => act(item.id, 'REJECTED')}>Decline</Button></> : <Button variant="outline" onClick={() => act(item.id, 'CANCELLED')}>Cancel request</Button>)}</div></article>; })}{!data?.requests?.length && <p className="community-empty">No mentorship requests.</p>}</div>
+    </>}
+  </section>;
 }
 
 export function EventsPage() {

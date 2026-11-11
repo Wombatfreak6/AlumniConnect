@@ -2,6 +2,8 @@ import api from './api';
 
 export const mentorshipService = {
   getSlots: (filters = {}) => api.get(`/mentorship/slots?${new URLSearchParams(filters)}`),
+  getMySlots: () => api.get('/mentorship/slots/my'),
+  getSlot: (id) => api.get(`/mentorship/slots/${id}`),
   createSlot: (body) => api.post('/mentorship/slots', body),
   updateSlot: (id, body) => api.put(`/mentorship/slots/${id}`, body),
   deleteSlot: (id) => api.delete(`/mentorship/slots/${id}`),

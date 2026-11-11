@@ -90,6 +90,16 @@ enum RegistrationStatus {
   CANCELLED
 }
 
+enum NotificationType {
+  REFERRAL_RECEIVED
+  REFERRAL_STATUS
+  MENTORSHIP_REQUEST
+  MENTORSHIP_STATUS
+  EVENT_REGISTRATION
+  EVENT_UPDATE
+  SYSTEM
+}
+
 // ============================================================================
 // MODELS
 // ============================================================================
@@ -117,6 +127,7 @@ model User {
   mentorshipRequests MentorshipRequest[] @relation("StudentMentorshipRequests")
   organizedEvents    Event[]             @relation("OrganizedEvents")
   eventRegistrations EventRegistration[] @relation("UserEventRegistrations")
+  notifications      Notification[]
 
   @@index([email])
   @@index([role])
@@ -302,4 +313,21 @@ model EventRegistration {
   @@index([eventId])
   @@index([userId])
   @@index([status])
+}
+
+/// Persistent notifications delivered in-app and optionally by email
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  message   String
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
 }

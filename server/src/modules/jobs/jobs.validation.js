@@ -130,6 +130,14 @@ function validateJobListQuery(query) {
     filters.company = query.company.trim().slice(0, 150);
   }
 
+  if (query.location && typeof query.location === 'string') {
+    filters.location = query.location.trim().slice(0, 150);
+  }
+
+  if (query.skill && typeof query.skill === 'string') {
+    filters.skill = query.skill.trim().slice(0, 80);
+  }
+
   if (query.employmentType && VALID_EMPLOYMENT_TYPES.includes(query.employmentType)) {
     filters.employmentType = query.employmentType;
   }

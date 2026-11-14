@@ -6,11 +6,16 @@ import Input from '../../components/common/Input';
 import Loading from '../../components/common/Loading';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import adminService from '../../services/adminService';
+import jobService from '../../services/jobService';
+import { Link } from 'react-router-dom';
 import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 50, totalPages: 1 });
+  const [page, setPage] = useState(1);
+  const [stats, setStats] = useState({ users: 0, students: 0, alumni: 0, jobPosts: 0, mentorshipRequests: 0, events: 0 });
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,11 +25,30 @@ export default function AdminDashboard() {
   const [filterRole, setFilterRole] = useState('ALL');
   const [reloadKey, setReloadKey] = useState(0);
   const [togglingId, setTogglingId] = useState(null);
+  const [moderatingJobId, setModeratingJobId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    const params = { page: 1, limit: 50 };
+    Promise.all([adminService.getStats(), jobService.getJobs({ page: 1, limit: 5 })])
+      .then(([statsResponse, jobsResponse]) => {
+        if (!isMounted) return;
+        if (statsResponse.data?.stats) setStats(statsResponse.data.stats);
+        setJobs(jobsResponse.data?.jobs || []);
+      })
+      .catch((err) => {
+        if (isMounted) setError(err.message || 'Failed to load dashboard metrics.');
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const params = { page, limit: 50 };
     if (filterRole !== 'ALL') params.role = filterRole;
     if (activeSearch) params.search = activeSearch;
 
@@ -34,7 +58,12 @@ export default function AdminDashboard() {
         if (!isMounted || !response.data) return;
         setUsers(response.data.users || []);
         setPagination(
-          response.data.pagination || { total: response.data.users.length, page: 1, limit: 50, totalPages: 1 }
+          response.data.pagination || {
+            total: response.data.users.length,
+            page,
+            limit: 50,
+            totalPages: 1,
+          }
         );
         setError(null);
       })
@@ -51,10 +80,25 @@ export default function AdminDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [filterRole, activeSearch, reloadKey]);
+  }, [filterRole, activeSearch, page, reloadKey]);
+
+  const handleModerateJob = async (jobId) => {
+    if (!window.confirm('Delete this job post? Any referral history attached to it will also be deleted.')) return;
+    setModeratingJobId(jobId);
+    try {
+      await jobService.deleteJob(jobId);
+      setJobs((current) => current.filter((job) => job.id !== jobId));
+      setStats((current) => ({ ...current, jobPosts: Math.max(0, current.jobPosts - 1) }));
+    } catch (err) {
+      setError(err.message || 'Failed to moderate job post.');
+    } finally {
+      setModeratingJobId(null);
+    }
+  };
 
   const handleRoleFilterChange = (role) => {
     setFilterRole(role);
+    setPage(1);
     setTableLoading(true);
     setError(null);
     setReloadKey((key) => key + 1);
@@ -63,6 +107,7 @@ export default function AdminDashboard() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setActiveSearch(search.trim());
+    setPage(1);
     setTableLoading(true);
     setError(null);
     setReloadKey((key) => key + 1);
@@ -97,10 +142,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const totalUsers = pagination.total || users.length;
-  const studentCount = users.filter((u) => u.role === 'STUDENT').length;
-  const alumniCount = users.filter((u) => u.role === 'ALUMNI').length;
-  const activeCount = users.filter((u) => u.isActive).length;
+  const totalUsers = stats.users;
 
   if (loading) {
     return <Loading message="Loading administration console..." fullScreen={false} />;
@@ -123,7 +165,7 @@ export default function AdminDashboard() {
         </div>
         <div className="system-health-badge">
           <span className="health-dot" />
-          <span>API & PostgreSQL: Connected</span>
+            <span>Live platform statistics</span>
         </div>
       </div>
 
@@ -147,25 +189,28 @@ export default function AdminDashboard() {
         />
         <StatCard
           title="Student Accounts"
-          value={studentCount}
+          value={stats.students}
           subtitle="Enrolled undergraduates"
           icon="🎒"
           variant="neutral"
         />
         <StatCard
           title="Alumni Accounts"
-          value={alumniCount}
+          value={stats.alumni}
           subtitle="Graduated industry members"
           icon="🎓"
           variant="success"
         />
-        <StatCard
-          title="Active Accounts"
-          value={activeCount}
-          subtitle={`${Math.round((activeCount / (totalUsers || 1)) * 100)}% platform health`}
-          icon="🛡️"
-          variant="warning"
-        />
+        <StatCard title="Job Posts" value={stats.jobPosts} subtitle="Published opportunities" icon="💼" variant="warning" />
+        <StatCard title="Mentorship Requests" value={stats.mentorshipRequests} subtitle="All request statuses" icon="🎓" variant="primary" />
+        <StatCard title="Events" value={stats.events} subtitle="Published events" icon="📅" variant="neutral" />
+      </section>
+
+      <section id="jobs">
+        <Card title="Job moderation" subtitle="Review recent listings or remove inappropriate posts">
+          {jobs.length === 0 ? <p className="text-muted">No job posts to review.</p> : <div className="community-list">{jobs.map((job) => <article className="community-row" key={job.id}><div><h3><Link to={`/jobs/${job.id}`}>{job.title}</Link></h3><p>{job.company} · {job.location} · Posted by {job.postedBy?.name || 'Alumni'}</p></div><div className="community-actions-inline"><Link to={`/jobs/${job.id}/edit`}><Button variant="outline" size="sm">Edit</Button></Link><Button variant="danger" size="sm" isLoading={moderatingJobId === job.id} onClick={() => handleModerateJob(job.id)}>Delete</Button></div></article>)}</div>}
+          <Link to="/jobs" className="community-link">Open job board →</Link>
+        </Card>
       </section>
 
       <section id="users">
@@ -270,6 +315,19 @@ export default function AdminDashboard() {
               </table>
             </div>
           )}
+          <div className="admin-pagination" aria-label="User directory pagination">
+            <span>Page {pagination.page} of {pagination.totalPages} · {pagination.total} users</span>
+            <div className="community-actions-inline">
+              <Button size="sm" variant="outline" disabled={page <= 1 || tableLoading} onClick={() => {
+                setTableLoading(true);
+                setPage((current) => Math.max(1, current - 1));
+              }}>Previous</Button>
+              <Button size="sm" variant="outline" disabled={page >= pagination.totalPages || tableLoading} onClick={() => {
+                setTableLoading(true);
+                setPage((current) => current + 1);
+              }}>Next</Button>
+            </div>
+          </div>
         </Card>
       </section>
 

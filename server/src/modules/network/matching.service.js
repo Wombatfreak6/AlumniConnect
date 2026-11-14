@@ -77,6 +77,20 @@ function calculateSkillScore(studentSkills = [], requiredSkills = []) {
   };
 }
 
+// Alumni relevance uses the share of a student's skills represented by the alumnus.
+function calculateAlumniSkillScore(studentSkills = [], alumniSkills = []) {
+  if (!Array.isArray(studentSkills) || studentSkills.length === 0 || !Array.isArray(alumniSkills)) {
+    return { score: 0, matchedSkills: [], totalStudentSkills: 0 };
+  }
+  const alumniSet = new Set(alumniSkills.map((skill) => normalizeText(skill)));
+  const matchedSkills = studentSkills.filter((skill) => alumniSet.has(normalizeText(skill)));
+  return {
+    score: Math.round((matchedSkills.length / studentSkills.length) * MATCHING_WEIGHTS.SKILLS),
+    matchedSkills,
+    totalStudentSkills: studentSkills.length,
+  };
+}
+
 // Branch score (max 30): exact normalized match only, otherwise 0.
 function calculateBranchScore(studentBranch, targetBranch) {
   const normStudent = normalizeText(studentBranch);
@@ -211,7 +225,7 @@ async function getStudentMatchingContext(studentId) {
   };
 }
 
-async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {}) {
+async function getJobRecommendations(studentId, { minScore = 1, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
@@ -226,7 +240,6 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
         select: {
           id: true,
           name: true,
-          email: true,
           profile: {
             select: {
               company: true,
@@ -310,7 +323,7 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
   return recommendations.slice(0, limit);
 }
 
-async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
+async function getAlumniMatches(studentId, { minScore = 1, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
@@ -334,7 +347,7 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
     const alumniProfile = alumni.profile || {};
     const alumniSkills = (alumni.userSkills || []).map((us) => us.skill.name);
 
-    const { score: skillScore, matchedSkills } = calculateSkillScore(
+    const { score: skillScore, matchedSkills } = calculateAlumniSkillScore(
       studentSkills,
       alumniSkills
     );
@@ -352,7 +365,6 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
       matches.push({
         alumniId: alumni.id,
         name: alumni.name,
-        email: alumni.email,
         company: alumniProfile.company || null,
         designation: alumniProfile.designation || null,
         industry: alumniProfile.industry || null,
@@ -390,6 +402,7 @@ module.exports = {
   extractKeywords,
   detectSkillsInText,
   calculateSkillScore,
+  calculateAlumniSkillScore,
   calculateBranchScore,
   calculateIndustryScore,
   generateMatchReason,

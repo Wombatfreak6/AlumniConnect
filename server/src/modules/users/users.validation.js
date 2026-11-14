@@ -1,4 +1,14 @@
-const URL_REGEX = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+function isValidLinkedInUrl(value) {
+  try {
+    const parsed = new URL(value);
+    const hostname = parsed.hostname.toLowerCase();
+    return ['http:', 'https:'].includes(parsed.protocol)
+      && (hostname === 'linkedin.com' || hostname.endsWith('.linkedin.com'))
+      && /^\/(in|company|school)\/[a-zA-Z0-9_%+-]+\/?$/.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
 
 // Only these profile fields are accepted; role, isActive and passwordHash can never be changed here.
 function validateProfileUpdate(body) {
@@ -62,7 +72,7 @@ function validateProfileUpdate(body) {
       profileData.linkedinUrl = null;
     } else if (typeof body.linkedinUrl === 'string') {
       const url = body.linkedinUrl.trim();
-      if (!URL_REGEX.test(url) && !url.includes('linkedin.com/')) {
+      if (!isValidLinkedInUrl(url)) {
         errors.push('Invalid LinkedIn URL format.');
       } else {
         profileData.linkedinUrl = url;

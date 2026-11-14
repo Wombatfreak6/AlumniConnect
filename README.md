@@ -18,7 +18,7 @@
 2. [Problem Statement](#-problem-statement)
 3. [Project Objectives](#-project-objectives)
 4. [Technology Stack](#-technology-stack)
-5. [Features Completed in Phase 1](#-features-completed-in-phase-1)
+5. [Implemented Features](#-implemented-features)
 6. [System Architecture](#-system-architecture)
 7. [Repository & Directory Structure](#-repository--directory-structure)
 8. [Database Architecture & Data Models](#-database-architecture--data-models)
@@ -31,7 +31,7 @@
 15. [Authentication & Session Workflow](#-authentication--session-workflow)
 16. [Role-Based Access Control (RBAC) Matrix](#-role-based-access-control-rbac-matrix)
 17. [Quality Assurance & Verification](#-quality-assurance--verification)
-18. [Future Development Modules & Roadmap](#-future-development-modules--roadmap)
+18. [Remaining Work and Limitations](#-remaining-work-and-limitations)
 19. [Team Git Commit History](#-team-git-commit-history)
 
 ---
@@ -56,9 +56,9 @@ Universities worldwide graduate thousands of accomplished individuals every year
 
 1. **Verified Community Identity:** Provide secure authentication with role enforcement (`STUDENT`, `ALUMNI`, `ADMIN`).
 2. **Comprehensive Profile & Skill Portfolios:** Enable students and alumni to showcase degrees, graduation years, technical skills, career goals, and professional positions.
-3. **Internal Referral Engine (Phase 2):** Allow alumni to publish job opportunities and review student referral requests without public spam.
-4. **Intelligent Student-Alumni Matching (Phase 2 & 3):** Automatically compute match scores based on shared skill taxonomies, academic branches, and career trajectories.
-5. **Structured 1-on-1 Mentorship (Phase 3):** Facilitate calendar slot booking for office hours and career coaching.
+3. **Internal Referral Engine:** Allow alumni to publish job opportunities and review student referral requests.
+4. **Intelligent Student-Alumni Matching:** Compute explainable match scores from skill overlap, academic branch, and career/industry relevance.
+5. **Structured Mentorship and Events:** Let alumni offer office hours and organizers run campus events with capacity-limited registration.
 6. **Centralized Campus Governance:** Give university administrators oversight of user accounts, institutional directories, and platform activity.
 
 ---
@@ -83,7 +83,7 @@ Universities worldwide graduate thousands of accomplished individuals every year
 
 ---
 
-## ✨ Features Completed in Phase 1
+## ✨ Implemented Features
 
 ### 1. Backend Foundation & Architecture
 - Modular Express 5 structure with separation of concerns: `config/`, `middleware/`, `modules/`, and `utils/`.
@@ -109,7 +109,7 @@ Universities worldwide graduate thousands of accomplished individuals every year
 - Atomic profile updating (`PUT /api/users/me`) supporting academic, professional, and contact fields.
 - Public user discovery (`GET /api/users/:id`) returning sanitized data (passwords and internal tokens omitted).
 - Normalized canonical skill catalog (`GET /api/skills`) with case-insensitive search.
-- Skill assignment (`POST /api/users/me/skills`) with automatic deduplication.
+- Skill assignment (`POST /api/users/me/skills`) with duplicate prevention.
 - Skill disassociation (`DELETE /api/users/me/skills/:skillId`).
 
 ### 4. Administrative Governance
@@ -130,7 +130,7 @@ Universities worldwide graduate thousands of accomplished individuals every year
 - Interactive Profile Management page with tabbed view and edit modes, plus live skill addition and removal.
 
 ### 6. Automated QA Integration
-- 27-suite end-to-end integration test validating backend endpoints, authorization gates, role isolation, and security integrity.
+- Server unit tests cover input validation and matching score calculations; database-backed API workflows require a configured PostgreSQL test database.
 
 ---
 
@@ -155,7 +155,10 @@ flowchart TD
             M_USERS["Users Module (/api/users)"]
             M_SKILLS["Skills Module (/api/skills)"]
             M_ADMIN["Admin Module (/api/admin)"]
-            M_JOBS["Jobs Module (Phase 2 - Handover)"]
+            M_JOBS["Jobs & Referrals Module"]
+            M_NETWORK["Matching Module"]
+            M_MENTOR["Mentorship Module"]
+            M_EVENTS["Events Module"]
         end
         
         ERR_MW["Centralized Error Middleware"]
@@ -166,6 +169,9 @@ flowchart TD
         AUTH_MW --> M_SKILLS
         AUTH_MW --> M_ADMIN
         AUTH_MW -.-> M_JOBS
+        AUTH_MW -.-> M_NETWORK
+        AUTH_MW -.-> M_MENTOR
+        AUTH_MW -.-> M_EVENTS
         Modules --> ERR_MW
     end
 
@@ -187,7 +193,10 @@ flowchart TD
 ```text
 alumni-connect/
 ├── docs/
-│   └── MEMBER_2_HANDOVER.md        # Dedicated handover specification for Member 2
+│   ├── API_REFERENCE.md             # Integrated endpoint inventory
+│   ├── MEMBER_1_HANDOVER.md         # Foundation setup and security notes
+│   ├── MEMBER_2_HANDOVER.md         # Jobs, referrals and matching
+│   └── MEMBER_3_HANDOVER.md         # Mentorship, events and integration
 ├── client/                          # React 19 Frontend Application
 │   ├── public/                      # Static assets & favicon
 │   ├── src/
@@ -223,7 +232,7 @@ alumni-connect/
 ├── server/                          # Express Backend Application
 │   ├── prisma/
 │   │   ├── migrations/
-│   │   │   └── 20261107083835_init/ # Baseline migration (10 models + 7 enums)
+│   │   │   └── 20261107083835_init/ # Baseline migration (10 models + 9 enums)
 │   │   ├── seed.js                  # Idempotent administrator seed script
 │   │   └── schema.prisma            # Prisma ORM schema
 │   ├── prisma.config.ts             # Prisma 7 datasource & migration configuration
@@ -238,6 +247,12 @@ alumni-connect/
 │   │   ├── modules/
 │   │   │   ├── admin/               # admin.controller.js, admin.routes.js
 │   │   │   ├── auth/                # auth.controller.js, auth.routes.js
+│   │   │   ├── events/              # event listing, registration and moderation
+│   │   │   ├── jobs/                # job board and filters
+│   │   │   ├── mentorship/          # slots and requests
+│   │   │   ├── notifications/       # persisted inbox, SSE stream, optional SMTP email
+│   │   │   ├── network/             # rule-based alumni/job matching
+│   │   │   ├── referrals/           # referral lifecycle
 │   │   │   ├── skills/              # skills.controller.js, skills.routes.js
 │   │   │   └── users/               # users.controller.js, users.routes.js
 │   │   ├── app.js                   # Express pipeline configuration
@@ -252,7 +267,7 @@ alumni-connect/
 
 ## 🗄 Database Architecture & Data Models
 
-Managed via **Prisma ORM 7** on **PostgreSQL 16+**. All 10 models and 7 enums exist in `schema.prisma` and are fully migrated under migration `20261107083835_init`.
+Managed via **Prisma ORM 7** on **PostgreSQL 16+**. All 11 models and 10 enums exist in `schema.prisma`. The baseline is `20261107083835_init`; notification storage is added by `20261111132645_add_notifications`.
 
 ### Entity-Relationship Diagram
 
@@ -271,6 +286,7 @@ erDiagram
     User ||--o{ Event : "organizes"
     Event ||--o{ EventRegistration : "has"
     User ||--o{ EventRegistration : "attends"
+    User ||--o{ Notification : "receives"
 ```
 
 ### Models Detail
@@ -368,6 +384,9 @@ Attendee registrations.
 - `registeredAt` (`DateTime`, default `now()`)
 - `@@unique([eventId, userId])`
 
+#### 11. `Notification` (Integrated notifications)
+Persistent per-user notifications for referral, mentorship, and event activity. Unread state uses `readAt`; connected clients receive new notifications through Server-Sent Events, with optional email delivery over SMTP.
+
 ### How to Extend the Database in Future Phases
 If you add columns or tables:
 1. Update `server/prisma/schema.prisma`.
@@ -400,11 +419,11 @@ Create `server/.env` based on `server/.env.example`:
 PORT=5001
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/alumni_connect?schema=public"
-JWT_SECRET=your_jwt_secret_key_change_in_production
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/alumni_connect?schema=public"
+JWT_SECRET=replace-with-a-unique-random-secret-at-least-32-characters
 JWT_EXPIRES_IN=7d
 ADMIN_EMAIL=admin@alumniconnect.edu
-ADMIN_PASSWORD=Admin@Secure2026!
+ADMIN_PASSWORD=replace-with-a-unique-strong-password
 ```
 
 > [!NOTE]
@@ -447,10 +466,7 @@ cd server
 npm run seed
 ```
 
-**Default Admin Credentials:**
-- **Email:** `admin@alumniconnect.edu`
-- **Password:** `Admin@Secure2026!`
-- **Role:** `ADMIN`
+Set `ADMIN_EMAIL` and a unique `ADMIN_PASSWORD` in `server/.env` before running the seed. The project does not ship or prefill a shared administrator password.
 
 ---
 
@@ -483,8 +499,10 @@ npm run build   # Validates production Vite build
 
 Base URL: `http://localhost:5001/api`
 
+The endpoint-by-endpoint inventory for all foundation, jobs, referrals, matching, mentorship, events, and administration routes is maintained in [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md). The sections below retain the foundation request/response examples.
+
 ### 1. Health Endpoint
-#### `GET /health`
+#### `GET /api/health`
 - **Authentication:** Public
 - **Allowed Roles:** Any
 - **Request Body:** None
@@ -784,7 +802,7 @@ sequenceDiagram
 
 | Feature / Endpoint | `STUDENT` | `ALUMNI` | `ADMIN` | Public / Unauth |
 |---|:---:|:---:|:---:|:---:|
-| System Health (`GET /health`) | ✅ | ✅ | ✅ | ✅ |
+| System Health (`GET /api/health`) | ✅ | ✅ | ✅ | ✅ |
 | Public Register (`POST /auth/register`) | ✅ | ✅ | ❌ | ✅ |
 | Login / Logout | ✅ | ✅ | ✅ | ✅ |
 | View Own Profile (`GET /users/me`) | ✅ | ✅ | ✅ | ❌ |
@@ -797,74 +815,28 @@ sequenceDiagram
 | Admin Dashboard (`/admin/dashboard`) | ❌ | ❌ | ✅ | ❌ |
 | Admin Directory API (`GET /admin/users`) | ❌ | ❌ | ✅ | ❌ |
 | Admin Status API (`PATCH /admin/users/:id/status`)| ❌ | ❌ | ✅ | ❌ |
-| Post Job Listing *(Phase 2 Scope)* | ❌ | ✅ | ✅ | ❌ |
-| Request Referral *(Phase 2 Scope)* | ✅ | ❌ | ❌ | ❌ |
-| Host Mentorship Slots *(Phase 3 Scope)* | ❌ | ✅ | ❌ | ❌ |
-| Book Mentorship Slot *(Phase 3 Scope)* | ✅ | ❌ | ❌ | ❌ |
+| Post Job Listing | ❌ | ✅ | ✅ | ❌ |
+| Request Referral | ✅ | ❌ | ❌ | ❌ |
+| Host Mentorship Slots | ❌ | ✅ | ❌ | ❌ |
+| Book Mentorship Slot | ✅ | ❌ | ❌ | ❌ |
 
 ---
 
 ## 🧪 Quality Assurance & Verification
 
-The project includes an automated end-to-end QA validation script executing 27 integration tests across 3 testing sections:
-1. **Section A: Backend Functionality** (Registration, validation, login, duplicate detection, logout, profile update, skills management, admin directory).
-2. **Section B: Authorization Boundaries** (Students/Alumni blocked from `/admin/*`, unauthenticated blocked from protected routes, user profile edit isolation, admin self-deactivation protection, admin registration tampering prevention).
-3. **Section C: Security & Resilience** (Expired/malformed cookie rejection, SQL injection evasion in search parameters, XSS tag sanitization).
+The server includes deterministic unit tests for validation and matching (`cd server && npm test`) and a repeatable API integration suite (`npm run test:integration`) that passes 67 API, auth, notification, and concurrency checks against a dedicated `TEST_DATABASE_URL` ending in `_test`, then cleans its test records. The integration run also sends test notifications to a local SMTP sink; no external emails are sent. Client checks are `cd client && npm run lint && npm run build`.
 
-**Current Test Status:** `27 / 27 PASSED (100% Pass Rate)`.  
-**Frontend Linter Status:** `0 warnings, 0 errors` via `oxlint`.
+## 🧩 Implemented Features
 
----
+The repository contains the Member 1 foundation, Member 2 jobs/referrals/matching, and Member 3 mentorship/events/admin integration modules. See [`docs/MEMBER_1_HANDOVER.md`](docs/MEMBER_1_HANDOVER.md), [`docs/MEMBER_2_HANDOVER.md`](docs/MEMBER_2_HANDOVER.md), [`docs/MEMBER_3_HANDOVER.md`](docs/MEMBER_3_HANDOVER.md), and the [integrated API inventory](docs/API_REFERENCE.md). Source presence alone does not establish that live database workflows have been verified.
 
-## 🗺 Future Development Modules & Roadmap
+## 📝 Remaining Work and Limitations
 
-### Phase 2: Member 2 Responsibility
-> Detailed step-by-step guidance is available in [`docs/MEMBER_2_HANDOVER.md`](docs/MEMBER_2_HANDOVER.md).
-
-1. **Job Board (`JobPost` Module):**
-   - Alumni post opportunities (`POST /api/jobs`).
-   - Filterable search by employment type, experience, and company (`GET /api/jobs`).
-   - Job details view with poster information (`GET /api/jobs/:id`).
-   - Alumni job owner edit/delete capabilities (`PUT /api/jobs/:id`, `DELETE /api/jobs/:id`).
-2. **Referral Engine (`JobReferral` Module):**
-   - Students request referrals (`POST /api/jobs/:id/referrals`) with duplicate submission prevention.
-   - Alumni referral review dashboard (`GET /api/alumni/referrals`).
-   - Student referral tracking dashboard (`GET /api/student/referrals`).
-   - Referral decision workflow (`PATCH /api/referrals/:id/status`: `ACCEPTED`, `REJECTED`, `REVIEWED`).
-3. **Intelligent Student-Job Matching Algorithm:**
-   - Skill overlap comparison ($S_{\text{skills}}$).
-   - Academic department/branch alignment ($S_{\text{branch}}$).
-   - Weighted match score computation and UI badge rendering.
-
----
-
-### Phase 3: Member 3 Responsibility
-1. **1-on-1 Mentorship Scheduling:**
-   - Alumni publish weekly availability slots (`MentorshipSlot`).
-   - Students browse calendar slots and submit booking requests (`MentorshipRequest`).
-   - Alumni accept or decline sessions.
-2. **Campus Events & Webinars:**
-   - University administrators and alumni organize virtual/in-person workshops (`Event`).
-   - Students and alumni register for sessions with capacity caps (`EventRegistration`).
-3. **Notification Engine:**
-   - Real-time in-app alerts and email notifications for referral responses and mentorship confirmations.
-
----
+- On a fresh checkout, configure `server/.env`, apply migrations, and seed an admin account before running the app.
+- A human visual review at desktop/tablet/mobile sizes is still needed; browser access was declined by the Codex origin approval gate, so the pages were not clicked through here.
+- In-app real-time notifications and SMTP transport are implemented. Actual email delivery requires your SMTP settings (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM`) in `server/.env`; without them notifications remain available in-app.
+- The current code and seeded local account use new credentials, but a former demo credential remains in published Git history. History rewriting and force-pushing are intentionally withheld; rotate any old deployed admin credential.
 
 ## 📜 Team Git Commit History
 
-All milestones have been systematically committed to `main`:
-
-| Commit Hash | Stage | Description |
-|---|:---:|---|
-| `ac64047` | 1 | `chore: initialize project structure and tooling` |
-| `590df2a` | 2 | `feat: configure PostgreSQL and Prisma schema` |
-| `afdde65` | 3 | `feat: setup Express server and middleware` |
-| `38db0f7` | 4 | `feat: implement JWT authentication and RBAC` |
-| `0700a4a` | 5 | `feat: implement user and profile management APIs` |
-| `b62efb9` | 6 | `feat: setup React frontend and design system` |
-| `f1cc03a` | 7 | `feat: implement registration and login interface` |
-| `788a983` | 8 | `feat: implement profile pages and role dashboards` |
-| `e1d7669` | 9 | `docs: update project documentation and team handover roadmap` |
-| `06e8ce6` | 10 | `test: integrate and validate authentication and profiles` |
-| *Current* | 11 | `docs: complete project documentation and handover` |
+The active integration checkout is `feature/mentorship-events-integration`. Changes made for the current completion pass are in the working tree and have not been committed. Use `git log --oneline --decorate` to inspect the actual repository history.

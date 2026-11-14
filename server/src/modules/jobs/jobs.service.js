@@ -4,7 +4,6 @@ const { prisma } = require('../../config/database');
 const POSTER_SELECT = {
   id: true,
   name: true,
-  email: true,
   profile: {
     select: {
       company: true,
@@ -123,7 +122,7 @@ async function getMyJobs(alumniId) {
   });
 }
 
-function buildJobWhereClause({ search, company, employmentType, experienceLevel } = {}) {
+function buildJobWhereClause({ search, company, location, skill, employmentType, experienceLevel } = {}) {
   const where = {};
 
   if (employmentType) {
@@ -138,12 +137,26 @@ function buildJobWhereClause({ search, company, employmentType, experienceLevel 
     where.company = { contains: company, mode: 'insensitive' };
   }
 
+  if (location) {
+    where.location = { contains: location, mode: 'insensitive' };
+  }
+
   if (search) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },
       { company: { contains: search, mode: 'insensitive' } },
     ];
+  }
+
+  if (skill) {
+    const skillMatch = {
+      OR: [
+        { title: { contains: skill, mode: 'insensitive' } },
+        { description: { contains: skill, mode: 'insensitive' } },
+      ],
+    };
+    where.AND = [...(where.AND || []), skillMatch];
   }
 
   return where;

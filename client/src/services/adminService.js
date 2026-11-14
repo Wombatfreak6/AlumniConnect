@@ -1,6 +1,10 @@
 import api from './api';
 
 export const adminService = {
+  async getStats() {
+    return api.get('/admin/stats');
+  },
+
   async getUsers(params = {}) {
     const query = new URLSearchParams();
     if (params.page) query.append('page', params.page);

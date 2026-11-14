@@ -36,6 +36,7 @@ export default function JobBoardPage() {
   const [search, setSearch] = useState('');
   const [company, setCompany] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [skillFilter, setSkillFilter] = useState('');
   const [employmentType, setEmploymentType] = useState('');
   const [experienceLevel, setExperienceLevel] = useState('');
   const [page, setPage] = useState(1);
@@ -53,6 +54,8 @@ export default function JobBoardPage() {
         .getJobs({
           search: search.trim() || undefined,
           company: company.trim() || undefined,
+          location: locationFilter.trim() || undefined,
+          skill: skillFilter.trim() || undefined,
           employmentType: employmentType || undefined,
           experienceLevel: experienceLevel || undefined,
           page,
@@ -81,7 +84,7 @@ export default function JobBoardPage() {
     return () => {
       isMounted = false;
     };
-  }, [search, company, employmentType, experienceLevel, page, limit, recommendedMode]);
+  }, [search, company, locationFilter, skillFilter, employmentType, experienceLevel, page, limit, recommendedMode]);
 
   const loadRecommendations = async () => {
     setRecLoading(true);
@@ -103,6 +106,7 @@ export default function JobBoardPage() {
     setSearch('');
     setCompany('');
     setLocationFilter('');
+    setSkillFilter('');
     setEmploymentType('');
     setExperienceLevel('');
     setPage(1);
@@ -112,14 +116,7 @@ export default function JobBoardPage() {
   const isAlumni = user?.role === 'ALUMNI' || user?.role === 'ADMIN';
   const isStudent = user?.role === 'STUDENT';
 
-  // Location is filtered here because the listing endpoint does not accept it.
-  let displayedJobs = jobs;
-  if (recommendedMode) {
-    displayedJobs = recommendedJobs;
-  } else if (locationFilter.trim()) {
-    const location = locationFilter.trim().toLowerCase();
-    displayedJobs = jobs.filter((job) => job.location?.toLowerCase().includes(location));
-  }
+  const displayedJobs = recommendedMode ? recommendedJobs : jobs;
 
   return (
     <div className="jobs-page container">
@@ -191,7 +188,20 @@ export default function JobBoardPage() {
               label="Location"
               placeholder="e.g. Remote, Seattle, NY"
               value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
+              onChange={(e) => {
+                setLocationFilter(e.target.value);
+                setPage(1);
+              }}
+            />
+
+            <Input
+              label="Skill keyword"
+              placeholder="e.g. React, Python, PostgreSQL"
+              value={skillFilter}
+              onChange={(e) => {
+                setSkillFilter(e.target.value);
+                setPage(1);
+              }}
             />
 
             <Select

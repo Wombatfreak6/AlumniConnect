@@ -6,8 +6,8 @@ const errorMiddleware = (err, req, res, next) => {
     statusCode = res.statusCode;
   }
 
-  // Prisma ke common errors ko friendly message mein badal rahe hain.
-  let message = err.message || 'Internal Server Error';
+  // Hide internal details for server errors.
+  let message = statusCode >= 500 ? 'An unexpected server error occurred.' : (err.message || 'Request failed.');
   if (err.code === 'P2002') {
     statusCode = 409;
     message = 'A record with this unique constraint already exists.';

@@ -1,13 +1,12 @@
 # AlumniConnect — Member 2 Handover Document
 
 **Document Version:** 2.0.0
-**Phase Completed:** Phase 2 — Job Board, Referral Engine & Intelligent Matching
+**Scope:** Member 2 — Job Board, Referral Engine & Intelligent Matching
 **Author:** Member 2
 **Target Recipient:** Member 3 (Mentorship, Events & Notifications Developer)
-**Repository Fork:** `Wombatfreak6/AlumniConnect`
-**Upstream Repository:** `avkashs0521/AlumniConnect`
-**Working Branch:** `feature/member-2-final`
-**Latest Commit:** `3341a478cf64810026d7180e103016afcd5ff249`
+**Historical Member 2 branch:** `feature/member-2-final`
+**Current integrated checkout:** `feature/mentorship-events-integration`
+**History note:** This handover describes the Member 2 implementation; use `git log` for verified commit history.
 **Date Completed:** 2026-11-10
 
 ---
@@ -25,10 +24,7 @@
 9. [Matching Algorithm & Scoring Formula](#9-matching-algorithm--scoring-formula)
 10. [Frontend Routes](#10-frontend-routes)
 11. [Authentication Integration](#11-authentication-integration)
-12. [Testing Performed & Results](#12-testing-performed--results)
-13. [Known Limitations](#13-known-limitations)
-14. [Latest Git Commit Hash](#14-latest-git-commit-hash)
-15. [Instructions for Member 3](#15-instructions-for-member-3)
+12. [Verification Status](#12-verification-status)
 
 ---
 
@@ -382,9 +378,9 @@ The matching engine lives in `server/src/modules/network/matching.service.js` an
 ### Formula
 
 ```
-skillScore    = floor((matchedSkillCount / totalStudentSkillCount) × 50)
+skillScore    = round((matchedSkillCount / totalStudentSkillCount) × 50)
 branchScore   = exactBranchMatch(normalizeAlias(studentBranch), normalizeAlias(alumnusBranch)) ? 30 : 0
-industryScore = floor((matchedKeywordCount / totalKeywordCount) × 20)
+industryScore = round((matchedKeywordCount / totalStudentKeywordCount) × 20)
 
 totalScore    = skillScore + branchScore + industryScore   // range: 0–100
 ```
@@ -466,234 +462,6 @@ const res = await fetch(`${API_BASE}/api/jobs`, {
 
 ---
 
-## 12. Testing Performed & Results
+## 12. Verification Status
 
-A comprehensive Node.js test suite was run against the live backend. **41 test cases total; 39 genuine passes, 2 known test-harness false negatives** (not production bugs).
-
-### Job Management — 13/13 Pass ✅
-
-| Test | Result |
-|------|--------|
-| Alumni creates a job (`POST /api/jobs`) | ✅ 201 |
-| Student blocked from creating a job | ✅ 403 |
-| Alumni edits their own job | ✅ 200 |
-| Alumni blocked from editing another alumnus's job | ✅ 403 |
-| Student browses jobs (`GET /api/jobs`) | ✅ 200 |
-| Search by title returns filtered results | ✅ 200 |
-| Filter by employmentType works | ✅ 200 |
-| Filter by experienceLevel works | ✅ 200 |
-| Filter by location works | ✅ 200 |
-| Pagination (page/limit) works | ✅ 200 |
-| Get single job by ID | ✅ 200 |
-| Invalid job ID returns 404 | ✅ 404 |
-| `GET /api/jobs/my` restricted to ALUMNI | ✅ ALUMNI 200 / STUDENT 403 |
-
-### Referral Engine — 8/9 (1 test-harness false negative) ✅
-
-| Test | Result |
-|------|--------|
-| Student submits referral | ✅ 201 |
-| Duplicate referral returns conflict | ✅ 409 |
-| Alumni sees incoming referrals | ✅ 200 |
-| Referral data isolation (alumni sees only their jobs' referrals) | ✅ |
-| Alumni marks referral as REVIEWED | ✅ 200 |
-| Alumni accepts referral | ✅ 200 |
-| Alumni rejects referral | ✅ 200 |
-| Student sees updated status | ✅ 200 |
-| Unauthorized alumni cannot update another's referral | ⚠️ **False negative**: test reused stale cookie after cross-account conflict; underlying 403 confirmed by manual re-run |
-
-### Intelligent Matching — 8/8 Pass ✅
-
-| Test | Result |
-|------|--------|
-| Student gets alumni matches | ✅ 200 |
-| Job recommendations returned | ✅ 200 |
-| Scores are in range 0–100 | ✅ |
-| Score breakdown fields present | ✅ |
-| Text `reason` field present | ✅ |
-| Empty profile handled safely (no crash) | ✅ |
-| Alumni blocked from matches endpoint | ✅ 403 |
-| Student blocked from alumni referral inbox | ✅ 403 |
-
-### Regression — Member 1 Features — 7/7 Pass ✅
-
-| Test | Result |
-|------|--------|
-| User registration | ✅ 201 |
-| User login | ✅ 200 |
-| Auth persistence (`GET /api/auth/me`) | ✅ 200 |
-| Logout | ✅ 200 |
-| Profile view | ✅ 200 |
-| Profile edit | ✅ 200 |
-| Skill management | ✅ 200 |
-
-### Repository Safety — 3/3 Pass ✅
-
-| Check | Result |
-|-------|--------|
-| `.env` not tracked by git | ✅ |
-| `node_modules/` not tracked | ✅ |
-| `dist/` not tracked | ✅ |
-
-### Frontend Quality Checks
-
-```bash
-cd client && npm run lint   # oxlint — 0 warnings, 0 errors ✅
-cd client && npm run build  # vite build — compiled in ~150ms, 0 errors ✅
-```
-
----
-
-## 13. Known Limitations
-
-1. **Matching accuracy improves with richer profiles.** The 3-factor algorithm requires students to have skills set and a branch in their profile, and alumni to have skills and a company set. Users with empty profiles receive a score of 0 and may not appear in recommendations.
-
-2. **No real-time notifications.** When an alumni changes a referral status, the student only sees the update on next page load or manual refresh. Member 3 may choose to implement WebSocket or polling-based notifications.
-
-3. **No file attachments for referral requests.** Students can submit a text message with their referral request but cannot attach a résumé or portfolio PDF. This is a deliberate scope boundary.
-
-4. **Job recommendation scoring uses student skills only.** The industry/career interest component reads from the student's `Profile.bio` field (or career goal text). If a student has not filled in their bio, the industry score component is 0.
-
-5. **No email notifications.** All interactions are in-app only.
-
-6. **Pagination is server-side only.** The frontend does not cache pages; each page navigation triggers a new API request.
-
----
-
-## 14. Latest Git Commit Hash
-
-```
-3341a478cf64810026d7180e103016afcd5ff249
-```
-
-**Branch:** `feature/member-2-final`
-**Remote:** `origin` → `https://github.com/Wombatfreak6/AlumniConnect`
-
-### Pull Requests Raised by Member 2
-
-| PR | Branch | Scope |
-|----|--------|-------|
-| #4 | `feature/frontend-job-service` | Task 6: Job service layer |
-| #5 | `feature/job-board-frontend` | Task 7: Job board pages |
-| #6 | `feature/referrals-frontend` | Task 8: Referral frontend (initial) |
-| #7 | `feature/task-8-referrals` | Task 8: Referral frontend (final) |
-| #8 | `feature/recommendations-frontend` | Task 9: Recommendations (initial) |
-| #9 | `feature/task-9-recommendations` | Task 9: Recommendations (final) |
-| #10 | `feature/member-2-final` | Task 11: Final QA + this handover doc |
-
----
-
-## 15. Instructions for Member 3
-
-### What You Are Building
-
-Your scope is **Phase 3:**
-- **Mentorship:** 1-on-1 slot scheduling (`MentorshipSlot`), student booking requests (`MentorshipRequest`)
-- **Events:** Campus events & webinars (`Event`), student registrations (`EventRegistration`)
-- **Notifications:** Platform-wide notification engine (optional, but referenced in sidebar placeholders)
-
-### Critical: Do Not Modify These Models
-
-The following Prisma models exist in `server/prisma/schema.prisma` and are **fully intact, untouched, and ready for your use**. Do **not** delete, rename, or alter their fields or relations:
-
-```
-MentorshipSlot
-MentorshipRequest
-Event
-EventRegistration
-```
-
-All existing foreign key relationships on these models are preserved.
-
-### Setting Up Your Environment
-
-```bash
-# Clone and install
-git clone https://github.com/avkashs0521/AlumniConnect.git
-cd AlumniConnect
-cp server/.env.example server/.env   # fill in your DB credentials
-cd server && npm install
-cd ../client && npm install
-
-# Start the backend
-cd server && node src/server.js
-
-# Start the frontend (dev)
-cd client && npm run dev
-```
-
-> The database schema is already migrated. Run `npx prisma db push` only if you add new models. Otherwise, run `npx prisma generate` after any schema change.
-
-### Where to Add Your Code
-
-**Backend:** Follow the identical module pattern used by Member 2:
-```
-server/src/modules/mentorship/
-  mentorship.routes.js
-  mentorship.controller.js
-  mentorship.service.js
-  mentorship.validation.js
-
-server/src/modules/events/
-  events.routes.js
-  events.controller.js
-  events.service.js
-  events.validation.js
-```
-
-Register your new routers in `server/src/app.js` following the same pattern:
-```js
-import mentorshipRouter from './modules/mentorship/mentorship.routes.js';
-app.use('/api', mentorshipRouter);
-```
-
-**Frontend:** Create pages under:
-```
-client/src/pages/mentorship/
-client/src/pages/events/
-```
-
-Register routes in `client/src/App.jsx`. Add sidebar links in `client/src/layouts/DashboardLayout.jsx`.
-
-### Sidebar Placeholders Already Waiting for You
-
-The following sidebar entries are rendered as **disabled placeholders** in `DashboardLayout.jsx` — replace them with active links once your pages are ready:
-
-- Alumni sidebar: `"Mentorship"` → `/alumni/mentorship`
-- Student sidebar: `"Find Mentors"` → `/network/mentors`
-- Both sidebars: `"Events"` → `/events`
-
-### Auth Pattern to Follow
-
-```js
-// In your controllers:
-const userId = req.user.userId || req.user.id;
-const userRole = req.user.role;
-
-// Role guard middleware (already built, just import):
-import { requireAuth, requireRole } from '../auth/auth.middleware.js';
-app.use(requireAuth);
-app.use(requireRole(['ALUMNI']));
-```
-
-### Do Not Break
-
-- `GET /api/jobs` — public job board (students use it daily)
-- `GET /api/network/matches` — student recommendations
-- `POST /api/jobs/:id/referrals` — referral submission
-- `GET /api/auth/me` — auth persistence (called on every page load)
-- Any existing Prisma relation on `User`, `Profile`, `UserSkill`, `Skill`, `JobPost`, `JobReferral`
-
-### Quality Standards
-
-Before raising your PR:
-```bash
-cd client && npm run lint   # must be 0 warnings, 0 errors
-cd client && npm run build  # must succeed cleanly
-```
-
-Do not introduce new CSS frameworks. Do not suppress lint errors. Do not commit `.env` or `node_modules`.
-
----
-
-*Document prepared by Member 2. All features listed in sections 2–12 have been implemented, tested against a live PostgreSQL database, and pushed to the repository.*
+The historical API test counts in earlier drafts of this handover could not be reproduced in this checkout and are removed. Current repeatable checks are `npm test` in `server/`, and `npm run lint` plus `npm run build` in `client/`. These validate unit behavior and client compilation only. Live API workflows and database authorization remain unverified until a PostgreSQL test database and credentials are configured.

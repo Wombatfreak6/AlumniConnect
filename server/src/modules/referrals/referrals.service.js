@@ -91,10 +91,10 @@ async function createReferral({ studentId, jobPostId, message }) {
   });
 
   await notifySafely({
-    userId: referral.alumniId,
+    userId: job.postedById,
     type: 'REFERRAL_RECEIVED',
     title: 'New referral request',
-    message: `A student requested a referral for “${job.title}”.`,
+    message: `A student requested a referral for ${job.title}.`,
     href: '/referrals/received',
   });
 
@@ -291,10 +291,10 @@ async function updateReferralStatus(referralId, newStatus, currentUserId) {
   });
 
   await notifySafely({
-    userId: referral.studentId,
+    userId: updatedReferral.studentId,
     type: 'REFERRAL_STATUS',
-    title: 'Referral request updated',
-    message: `Your referral request for “${updatedReferral.jobPost.title}” is now ${newStatus.toLowerCase()}.`,
+    title: 'Referral status updated',
+    message: `Your referral request for ${updatedReferral.jobPost.title} was ${newStatus.toLowerCase()}.`,
     href: '/referrals/my',
   });
 

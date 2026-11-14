@@ -222,3 +222,29 @@
     display: none;
   }
 }
+
+@media (max-width: 640px) {
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-actions a,
+  .hero-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-social-proof {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .proof-separator {
+    display: none;
+  }
+
+  .pathways-card {
+    padding: var(--space-5);
+  }
+}

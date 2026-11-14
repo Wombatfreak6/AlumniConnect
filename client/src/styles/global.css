@@ -66,6 +66,32 @@ a:hover {
   padding-right: var(--space-4);
 }
 
+@media (max-width: 640px) {
+  .container {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+}
+
+/* Reusable Responsive Utilities */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Badges & Tags */
 .badge {
   display: inline-flex;

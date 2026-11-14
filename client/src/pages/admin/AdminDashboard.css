@@ -36,6 +36,35 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .admin-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .admin-search-wrapper {
+    min-width: 100%;
+  }
+
+  .admin-role-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-1);
+    scrollbar-width: none;
+  }
+
+  .admin-role-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-filter-pill {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
 .admin-pagination {
   display: flex;
   justify-content: space-between;
@@ -84,6 +113,7 @@
 
 .admin-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
   text-align: left;
 }

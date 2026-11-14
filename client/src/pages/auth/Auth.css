@@ -74,3 +74,10 @@
   background-color: var(--color-primary-50);
   color: var(--color-primary);
 }
+
+@media (max-width: 480px) {
+  .role-selector-group {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}

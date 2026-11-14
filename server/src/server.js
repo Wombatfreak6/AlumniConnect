@@ -29,7 +29,7 @@ async function startServer(port = config.port) {
   try {
     await connectDB();
 
-    server = app.listen(port, () => {
+    server = app.listen(port,'0.0.0.0', () => {
       console.log(`[Server] AlumniConnect running on http://localhost:${port}`);
     });
 

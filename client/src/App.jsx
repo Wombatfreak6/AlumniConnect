@@ -21,20 +21,26 @@ import StudentReferralsPage from './pages/referrals/StudentReferralsPage';
 import AlumniReferralsPage from './pages/referrals/AlumniReferralsPage';
 import RecommendationsPage from './pages/network/RecommendationsPage';
 import NotFoundPage from './pages/NotFoundPage';
-import { MentorshipPage, MentorshipManagePage, MentorshipDetailsPage, EventsPage, EventFormPage, EventDetailsPage, MyEventsPage } from './pages/community/CommunityPages';
+import {
+  MentorshipPage,
+  MentorshipDetailsPage,
+  MentorshipManagePage,
+  EventsPage,
+  EventFormPage,
+  EventDetailsPage,
+  MyEventsPage,
+} from './pages/community/CommunityPages';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Landing & Informational Routes */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          {/* Guest-only Auth Routes: Redirects logged-in users to their portal */}
           <Route element={<PublicOnlyRoute />}>
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
@@ -42,52 +48,45 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Protected Student Portal: Accessible by STUDENT and ADMIN */}
           <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="STUDENT" />}>
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/referrals/my" element={<StudentReferralsPage />} />
               <Route path="/network/matches" element={<RecommendationsPage />} />
-              <Route path="/mentorship" element={<MentorshipPage />} />
               <Route path="/mentorship/requests" element={<MentorshipManagePage />} />
             </Route>
           </Route>
 
-          {/* Protected Alumni Portal: Accessible by ALUMNI and ADMIN */}
           <Route element={<ProtectedRoute allowedRoles={['ALUMNI', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ALUMNI" />}>
               <Route path="/alumni" element={<AlumniDashboard />} />
               <Route path="/mentorship/manage" element={<MentorshipManagePage />} />
-              <Route path="/events/create" element={<EventFormPage />} />
-              <Route path="/events/:id/edit" element={<EventFormPage />} />
             </Route>
           </Route>
 
-          {/* Protected Admin Console: Strictly ADMIN only */}
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ADMIN" />}>
               <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/events/create" element={<EventFormPage />} />
-              <Route path="/events/:id/edit" element={<EventFormPage />} />
             </Route>
           </Route>
 
-          {/* Protected Alumni / Admin Job & Referral Management Routes */}
           <Route element={<ProtectedRoute allowedRoles={['ALUMNI', 'ADMIN']} />}>
             <Route element={<DashboardLayout defaultRole="ALUMNI" />}>
               <Route path="/jobs/create" element={<CreateJobPage />} />
               <Route path="/jobs/my" element={<MyJobsPage />} />
               <Route path="/jobs/:id/edit" element={<EditJobPage />} />
               <Route path="/referrals/received" element={<AlumniReferralsPage />} />
+              <Route path="/events/create" element={<EventFormPage />} />
+              <Route path="/events/:id/edit" element={<EventFormPage />} />
             </Route>
           </Route>
 
-          {/* Protected General Job Board Routes: Accessible by all authenticated roles */}
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/jobs" element={<JobBoardPage />} />
               <Route path="/jobs/:id" element={<JobDetailsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/mentorship" element={<MentorshipPage />} />
               <Route path="/mentorship/slots/:id" element={<MentorshipDetailsPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/my" element={<MyEventsPage />} />

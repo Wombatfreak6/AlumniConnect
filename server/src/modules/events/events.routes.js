@@ -1,8 +1,10 @@
 const { Router } = require('express');
 const controller = require('./events.controller');
 const { authenticateToken, authorizeRoles } = require('../../middleware/authMiddleware');
+
 const router = Router();
 router.use(authenticateToken);
+
 router.get('/', controller.list);
 router.get('/my-events', controller.mine);
 router.post('/', authorizeRoles('ALUMNI', 'ADMIN'), controller.create);
@@ -12,4 +14,5 @@ router.delete('/:id/register', authorizeRoles('STUDENT', 'ALUMNI'), controller.c
 router.get('/:id', controller.get);
 router.put('/:id', authorizeRoles('ALUMNI', 'ADMIN'), controller.update);
 router.delete('/:id', authorizeRoles('ALUMNI', 'ADMIN'), controller.remove);
+
 module.exports = router;

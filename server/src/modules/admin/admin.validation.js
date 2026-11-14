@@ -1,12 +1,5 @@
-/**
- * Validation utilities for Admin endpoints
- */
-
 const ALLOWED_ROLES = ['STUDENT', 'ALUMNI', 'ADMIN'];
 
-/**
- * Validates and sanitizes admin user listing pagination & filter parameters.
- */
 function validateUserListQuery(query) {
   let page = Number(query.page);
   if (!Number.isInteger(page) || page <= 0) {
@@ -49,9 +42,6 @@ function validateUserListQuery(query) {
   };
 }
 
-/**
- * Validates status update payload for PATCH /api/admin/users/:id/status
- */
 function validateStatusUpdate(body) {
   if (body.isActive === undefined || typeof body.isActive !== 'boolean') {
     return {

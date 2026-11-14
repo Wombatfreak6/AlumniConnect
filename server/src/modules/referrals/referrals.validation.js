@@ -1,19 +1,13 @@
-/**
- * Input validation for Job Referrals module
- */
-
 const VALID_REFERRAL_STATUSES = ['PENDING', 'REVIEWED', 'ACCEPTED', 'REJECTED'];
 
+// PENDING -> REVIEWED/ACCEPTED/REJECTED, REVIEWED -> ACCEPTED/REJECTED, then final.
 const ALLOWED_STATUS_TRANSITIONS = {
   PENDING: ['REVIEWED', 'ACCEPTED', 'REJECTED'],
   REVIEWED: ['ACCEPTED', 'REJECTED'],
-  ACCEPTED: [], // terminal state
-  REJECTED: [], // terminal state
+  ACCEPTED: [],
+  REJECTED: [],
 };
 
-/**
- * Validates the referral request payload submitted by a student.
- */
 function validateReferralRequest(body) {
   const errors = [];
   let sanitizedMessage = null;
@@ -37,13 +31,6 @@ function validateReferralRequest(body) {
   };
 }
 
-/**
- * Validates a status update transition for a referral.
- * Enforces business logic:
- *   PENDING -> REVIEWED, ACCEPTED, REJECTED
- *   REVIEWED -> ACCEPTED, REJECTED
- *   ACCEPTED / REJECTED -> terminal, no transitions allowed
- */
 function validateStatusTransition(currentStatus, targetStatus) {
   if (!targetStatus) {
     return {
@@ -86,9 +73,6 @@ function validateStatusTransition(currentStatus, targetStatus) {
   };
 }
 
-/**
- * Validates a route parameter ID (integer > 0).
- */
 function validateIntegerId(paramValue, paramName = 'id') {
   const id = Number(paramValue);
   if (!Number.isInteger(id) || id <= 0) {
@@ -101,9 +85,6 @@ function validateIntegerId(paramValue, paramName = 'id') {
   return { isValid: true, error: null, id };
 }
 
-/**
- * Validates optional status filter in query params.
- */
 function validateStatusFilter(status) {
   if (!status) return { isValid: true, status: null };
   const upper = status.trim().toUpperCase();

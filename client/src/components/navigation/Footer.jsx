@@ -4,9 +4,6 @@ import './Footer.css';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-/**
- * Global Site Footer Component
- */
 export default function Footer() {
   return (
     <footer className="footer">

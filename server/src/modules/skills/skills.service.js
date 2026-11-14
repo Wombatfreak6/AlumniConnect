@@ -1,9 +1,5 @@
 const { prisma } = require('../../config/database');
 
-/**
- * Retrieves all canonical skills from the database catalog.
- * Supports optional search filtering.
- */
 async function getAllSkills(searchQuery = '') {
   const where = {};
 

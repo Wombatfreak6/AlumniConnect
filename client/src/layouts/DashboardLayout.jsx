@@ -5,16 +5,12 @@ import Sidebar from '../components/navigation/Sidebar';
 import useAuth from '../hooks/useAuth';
 import './DashboardLayout.css';
 
-/**
- * Common Dashboard Layout
- * Shared layout for Student, Alumni, and Admin portals.
- */
 export default function DashboardLayout({ defaultRole }) {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Infer active role: route-specific overrides or authenticated user role
-  let currentRole = defaultRole;
+  // Admins keep the admin console when they open shared pages.
+  let currentRole = user?.role === 'ADMIN' ? 'ADMIN' : defaultRole;
   if (!currentRole) {
     if (
       location.pathname.startsWith('/alumni') ||
@@ -36,7 +32,6 @@ export default function DashboardLayout({ defaultRole }) {
     }
   }
 
-  // Sidebar navigation presets per role
   const sidebarConfigs = {
     STUDENT: {
       title: 'Student Hub',

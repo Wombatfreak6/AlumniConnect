@@ -5,11 +5,6 @@ const {
   validateStatusFilter,
 } = require('./referrals.validation');
 
-/**
- * POST /api/jobs/:id/referrals
- * Student requests a referral for the specified job.
- * Authorization: STUDENT only.
- */
 async function requestReferral(req, res, next) {
   try {
     const { isValid: idValid, error: idError, id: jobPostId } = validateIntegerId(
@@ -25,7 +20,7 @@ async function requestReferral(req, res, next) {
       return res.status(400).json({ success: false, message: errors.join(' ') });
     }
 
-    const studentId = req.user.userId || req.user.id;
+    const studentId = req.user.id;
     const referral = await referralsService.createReferral({
       studentId,
       jobPostId,
@@ -42,11 +37,6 @@ async function requestReferral(req, res, next) {
   }
 }
 
-/**
- * GET /api/alumni/referrals
- * Returns referral requests received by the authenticated alumnus.
- * Authorization: ALUMNI only.
- */
 async function getAlumniReferrals(req, res, next) {
   try {
     const { isValid, error, status } = validateStatusFilter(req.query.status);
@@ -54,7 +44,7 @@ async function getAlumniReferrals(req, res, next) {
       return res.status(400).json({ success: false, message: error });
     }
 
-    const alumniId = req.user.userId || req.user.id;
+    const alumniId = req.user.id;
     const referrals = await referralsService.getAlumniReferrals(alumniId, status);
 
     return res.status(200).json({
@@ -67,14 +57,9 @@ async function getAlumniReferrals(req, res, next) {
   }
 }
 
-/**
- * GET /api/student/referrals
- * Returns referral requests submitted by the authenticated student.
- * Authorization: STUDENT only.
- */
 async function getStudentReferrals(req, res, next) {
   try {
-    const studentId = req.user.userId || req.user.id;
+    const studentId = req.user.id;
     const referrals = await referralsService.getStudentReferrals(studentId);
 
     return res.status(200).json({
@@ -87,11 +72,6 @@ async function getStudentReferrals(req, res, next) {
   }
 }
 
-/**
- * PATCH /api/referrals/:id/status
- * Updates the status of a referral request.
- * Authorization: ALUMNI only (and must be assigned alumniId).
- */
 async function updateStatus(req, res, next) {
   try {
     const { isValid: idValid, error: idError, id: referralId } = validateIntegerId(
@@ -109,7 +89,7 @@ async function updateStatus(req, res, next) {
       });
     }
 
-    const currentUserId = req.user.userId || req.user.id;
+    const currentUserId = req.user.id;
     const updatedReferral = await referralsService.updateReferralStatus(
       referralId,
       req.body.status,

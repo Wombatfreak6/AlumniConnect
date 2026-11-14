@@ -17,7 +17,6 @@ export default function ProfilePage() {
   const [successNotice, setSuccessNotice] = useState(null);
   const [activeTab, setActiveTab] = useState('view'); // 'view' | 'edit'
 
-  // User Profile Form State
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
@@ -34,15 +33,11 @@ export default function ProfilePage() {
     linkedinUrl: '',
   });
 
-  // User Skills State
   const [skills, setSkills] = useState([]);
   const [newSkillInput, setNewSkillInput] = useState('');
   const [skillSubmitting, setSkillSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
-  /**
-   * Fetch live profile and skills on mount
-   */
   useEffect(() => {
     let isMounted = true;
     userService
@@ -116,9 +111,6 @@ export default function ProfilePage() {
     return errors;
   };
 
-  /**
-   * Submit profile updates to PUT /api/users/me
-   */
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setError(null);
@@ -147,7 +139,7 @@ export default function ProfilePage() {
 
       const res = await userService.updateMyProfile(payload);
       if (res.data?.user) {
-        // Refresh AuthContext so that user state across Navbar & Dashboards updates
+        // Navbar aur dashboards updated user dikhayein, isliye auth state refresh karte hain.
         await refreshUser();
       }
 
@@ -161,9 +153,6 @@ export default function ProfilePage() {
     }
   };
 
-  /**
-   * Add a skill via POST /api/users/me/skills
-   */
   const handleAddSkill = async (e) => {
     e.preventDefault();
     const trimmed = newSkillInput.trim();
@@ -198,9 +187,6 @@ export default function ProfilePage() {
     }
   };
 
-  /**
-   * Remove a skill via DELETE /api/users/me/skills/:skillId
-   */
   const handleRemoveSkill = async (skillId, skillName) => {
     setError(null);
     try {
@@ -214,7 +200,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <Loading text="Loading your profile details..." fullScreen={false} />;
+    return <Loading message="Loading your profile details..." fullScreen={false} />;
   }
 
   const isAlumni = (profileData.role || authUser?.role) === 'ALUMNI';
@@ -222,7 +208,6 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      {/* Profile Header Banner */}
       <div className="profile-header-card">
         <div className="profile-avatar-wrapper">
           <div className="profile-avatar">{isAlumni ? '🎓' : '🎒'}</div>
@@ -246,7 +231,6 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Tab / View Switcher */}
         <div className="profile-header-actions">
           <div className="profile-tab-toggle">
             <button
@@ -267,7 +251,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Feedback Alerts */}
       {successNotice && (
         <div className="profile-success-banner" role="status">
           <span>✅ {successNotice}</span>
@@ -275,15 +258,12 @@ export default function ProfilePage() {
       )}
 
       {error && (
-        <ErrorAlert message={error} onDismiss={() => setError(null)} />
+        <ErrorAlert message={error} />
       )}
 
-      {/* Main Profile Grid */}
       <div className="profile-content-grid">
-        {/* Left Column: View Mode OR Edit Form */}
         <div className="profile-main-col">
           {activeTab === 'edit' ? (
-            /* ================= EDIT MODE ================= */
             <Card
               title="Edit Profile Information"
               subtitle="Update your academic, career, and personal background details"
@@ -445,9 +425,7 @@ export default function ProfilePage() {
               </form>
             </Card>
           ) : (
-            /* ================= VIEW MODE ================= */
             <>
-              {/* Bio & Summary Card */}
               <Card title="About Me" className="profile-section-card">
                 <p className="profile-bio-text">
                   {profileData.bio || (
@@ -467,7 +445,6 @@ export default function ProfilePage() {
                 )}
               </Card>
 
-              {/* Alumni-specific Industry & Company Card */}
               {isAlumni && (
                 <Card title="Industry & Employment" className="profile-section-card" style={{ marginTop: 'var(--space-6)' }}>
                   <div className="details-grid">
@@ -504,7 +481,6 @@ export default function ProfilePage() {
                 </Card>
               )}
 
-              {/* Academic Background Card */}
               <Card title="Academic Background" className="profile-section-card" style={{ marginTop: 'var(--space-6)' }}>
                 <div className="details-grid">
                   <div className="detail-item">
@@ -545,14 +521,11 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Right Column: Skills & Verification */}
         <aside className="profile-side-col">
-          {/* Skills Management Card */}
           <Card
             title="Skills & Competencies"
             subtitle="Skills highlight your background for matching and referrals"
           >
-            {/* Add Skill Form */}
             <form onSubmit={handleAddSkill} className="add-skill-form">
               <Input
                 placeholder="Add a skill (e.g. React, Go, Docker)..."
@@ -571,7 +544,6 @@ export default function ProfilePage() {
               </Button>
             </form>
 
-            {/* Skills Tag Cloud */}
             <div className="skills-tag-cloud" style={{ marginTop: 'var(--space-4)' }}>
               {skills.length === 0 ? (
                 <p className="no-skills-notice">No skills added yet. Type a skill above to start building your profile.</p>
@@ -594,7 +566,6 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          {/* Account Status Card */}
           <Card title="Account Verification" style={{ marginTop: 'var(--space-6)' }}>
             <div className="verification-status-box">
               <span className="verified-check">✔</span>

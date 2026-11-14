@@ -1,7 +1,3 @@
-/**
- * Input validation for User and Profile management
- */
-
 function isValidLinkedInUrl(value) {
   try {
     const parsed = new URL(value);
@@ -14,16 +10,12 @@ function isValidLinkedInUrl(value) {
   }
 }
 
-/**
- * Validates and sanitizes profile update payload.
- * Strictly prevents modifications to security-critical fields (role, isActive, passwordHash).
- */
+// Only these profile fields are accepted; role, isActive and passwordHash can never be changed here.
 function validateProfileUpdate(body) {
   const errors = [];
   const profileData = {};
   let userName = null;
 
-  // Name (User model field)
   if (body.name !== undefined) {
     if (typeof body.name !== 'string' || body.name.trim().length < 2) {
       errors.push('Name must be at least 2 characters long.');
@@ -32,7 +24,6 @@ function validateProfileUpdate(body) {
     }
   }
 
-  // Profile fields
   const stringFields = ['college', 'branch', 'batch', 'company', 'designation', 'industry'];
   for (const field of stringFields) {
     if (body[field] !== undefined) {
@@ -46,7 +37,6 @@ function validateProfileUpdate(body) {
     }
   }
 
-  // Long text fields
   const textFields = ['bio', 'careerGoals'];
   for (const field of textFields) {
     if (body[field] !== undefined) {
@@ -64,7 +54,6 @@ function validateProfileUpdate(body) {
     }
   }
 
-  // Graduation Year (Integer)
   if (body.graduationYear !== undefined) {
     if (body.graduationYear === null || body.graduationYear === '') {
       profileData.graduationYear = null;
@@ -78,7 +67,6 @@ function validateProfileUpdate(body) {
     }
   }
 
-  // LinkedIn URL
   if (body.linkedinUrl !== undefined) {
     if (body.linkedinUrl === null || body.linkedinUrl === '') {
       profileData.linkedinUrl = null;
@@ -104,9 +92,6 @@ function validateProfileUpdate(body) {
   };
 }
 
-/**
- * Validates skill payload for adding a skill to user profile.
- */
 function validateSkillInput(body) {
   const errors = [];
   let skillName = null;
@@ -145,9 +130,6 @@ function validateSkillInput(body) {
   };
 }
 
-/**
- * Validates route parameters that must be positive integers.
- */
 function validateIntegerId(paramValue, paramName = 'id') {
   const id = Number(paramValue);
   if (!Number.isInteger(id) || id <= 0) {
@@ -164,9 +146,6 @@ function validateIntegerId(paramValue, paramName = 'id') {
   };
 }
 
-/**
- * Normalizes a skill name by trimming whitespace and formatting capitalization.
- */
 function normalizeSkillName(rawName) {
   return rawName
     .trim()

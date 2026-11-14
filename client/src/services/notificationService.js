@@ -7,9 +7,15 @@ const notificationService = {
   markRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.patch('/notifications/read-all'),
   subscribe(onNotification) {
-    const stream = new EventSource(`${API_BASE_URL}/notifications/stream`, { withCredentials: true });
+    const stream = new EventSource(`${API_BASE_URL}/notifications/stream`, {
+      withCredentials: true,
+    });
     stream.addEventListener('notification', (event) => {
-      try { onNotification(JSON.parse(event.data)); } catch { /* Ignore malformed stream payloads. */ }
+      try {
+        onNotification(JSON.parse(event.data));
+      } catch {
+        // Ignore malformed stream payloads.
+      }
     });
     return () => stream.close();
   },

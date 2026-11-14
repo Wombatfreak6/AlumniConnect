@@ -2,9 +2,6 @@ import React from 'react';
 import './ErrorAlert.css';
 import Button from './Button';
 
-/**
- * Reusable Error Alert Component
- */
 export default function ErrorAlert({
   title = 'Something went wrong',
   message,

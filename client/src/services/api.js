@@ -1,15 +1,6 @@
-/**
- * Reusable HTTP API Client for AlumniConnect
- *
- * Configured with credentials enabled to support HttpOnly cookie authentication.
- * Never stores or reads JWT tokens in JavaScript.
- */
-
+// JWT lives in an HttpOnly cookie, so this client never reads or stores the token.
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
-/**
- * Custom API Error class preserving status code and backend error details
- */
 export class ApiError extends Error {
   constructor(message, status = 500, data = null) {
     super(message);
@@ -19,13 +10,6 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Execute HTTP requests with credentials and JSON headers
- *
- * @param {string} endpoint - API path (e.g. '/auth/login' or '/users/me')
- * @param {RequestInit} [options={}] - Fetch configuration options
- * @returns {Promise<any>} Parsed response data
- */
 async function request(endpoint, options = {}) {
   const url = endpoint.startsWith('http')
     ? endpoint
@@ -39,7 +23,6 @@ async function request(endpoint, options = {}) {
   const config = {
     ...options,
     headers,
-    // Ensure HttpOnly session cookies are sent and received cross-origin / same-origin
     credentials: 'include',
   };
 
@@ -54,7 +37,6 @@ async function request(endpoint, options = {}) {
     );
   }
 
-  // Parse response body
   let data;
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
@@ -71,7 +53,6 @@ async function request(endpoint, options = {}) {
     }
   }
 
-  // Handle HTTP error statuses
   if (!response.ok) {
     const errorMessage =
       (data && data.message) ||

@@ -1,9 +1,6 @@
 import React from 'react';
 import './Card.css';
 
-/**
- * Reusable Card Component
- */
 export default function Card({
   children,
   title,

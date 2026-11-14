@@ -64,7 +64,7 @@ export default function LoginPage() {
         password: formData.password,
       });
 
-      // Redirect to previous requested page if saved in navigation state, else role dashboard
+      // Send the user back to the page that redirected them here, if there was one.
       const destination = location.state?.from?.pathname || getDefaultDashboardPath(user.role);
       navigate(destination, { replace: true });
     } catch (err) {
@@ -88,7 +88,7 @@ export default function LoginPage() {
       {apiError && (
         <ErrorAlert
           message={apiError}
-          onDismiss={() => setApiError('')}
+
         />
       )}
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             variant="primary"
-            fullWidth
+            block
             isLoading={isSubmitting}
           >
             Sign In

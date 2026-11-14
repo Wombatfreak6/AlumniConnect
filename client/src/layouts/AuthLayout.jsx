@@ -4,10 +4,6 @@ import './AuthLayout.css';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-/**
- * Clean Auth Shell Layout
- * Used for Login and Registration flows.
- */
 export default function AuthLayout() {
   return (
     <div className="auth-shell">

@@ -19,24 +19,15 @@ const { authenticateToken, authorizeRoles } = require('./middleware/authMiddlewa
 
 const app = express();
 
-// ============================================================================
-// GLOBAL MIDDLEWARES
-// ============================================================================
-
-// CORS configuration for the React frontend
 app.use(cors({
   origin: config.clientUrl,
   credentials: true,
 }));
 
-// Body parsing middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Cookie parsing middleware
 app.use(cookieParser());
 
-// Development request logger
 if (config.nodeEnv === 'development') {
   app.use((req, res, next) => {
     const start = Date.now();
@@ -48,11 +39,6 @@ if (config.nodeEnv === 'development') {
   });
 }
 
-// ============================================================================
-// ROUTES
-// ============================================================================
-
-// Root API information endpoint
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -60,8 +46,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
-// Expected response: { "success": true, "message": "AlumniConnect API is running" }
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -69,31 +53,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Authentication module routes
 app.use('/api/auth', authRoutes);
-
-// User and Profile management routes
 app.use('/api/users', usersRoutes);
-
-// Skills catalog routes
 app.use('/api/skills', skillsRoutes);
-
-// Administrative oversight routes (RBAC protected)
 app.use('/api/admin', adminRoutes);
-
-// Job board and posting management routes
 app.use('/api/jobs', jobsRoutes);
-
-// Referral workflow routes
 app.use('/api/referrals', referralsRoutes);
-
-// Intelligent network matching & recommendations
 app.use('/api/network', networkRoutes);
 app.use('/api/mentorship', mentorshipRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 
-// Direct alumni and student referral endpoints (as specified in Handover spec)
+// Referral shortcuts kept for the handover API spec.
 app.get(
   '/api/alumni/referrals',
   authenticateToken,
@@ -107,14 +78,7 @@ app.get(
   referralsController.getStudentReferrals
 );
 
-// ============================================================================
-// ERROR & 404 HANDLERS
-// ============================================================================
-
-// 404 Not Found handler
 app.use(notFoundMiddleware);
-
-// Centralized Error handler
 app.use(errorMiddleware);
 
 module.exports = app;

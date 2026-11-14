@@ -1,13 +1,8 @@
 const matchingService = require('./matching.service');
 
-/**
- * GET /api/jobs/recommendations
- * Recommends jobs sorted by descending match score for the authenticated student.
- * Authorization: STUDENT only.
- */
 async function getJobRecommendations(req, res, next) {
   try {
-    const studentId = req.user.userId || req.user.id;
+    const studentId = req.user.id;
     const limit = Math.max(1, Math.min(50, parseInt(req.query.limit, 10) || 20));
     const parsedMinScore = Number.parseInt(req.query.minScore, 10);
     const minScore = Number.isFinite(parsedMinScore) ? Math.max(0, Math.min(100, parsedMinScore)) : 1;
@@ -27,14 +22,9 @@ async function getJobRecommendations(req, res, next) {
   }
 }
 
-/**
- * GET /api/network/matches
- * Recommends relevant alumni peers sorted by descending match score.
- * Authorization: STUDENT only.
- */
 async function getAlumniMatches(req, res, next) {
   try {
-    const studentId = req.user.userId || req.user.id;
+    const studentId = req.user.id;
     const limit = Math.max(1, Math.min(50, parseInt(req.query.limit, 10) || 20));
     const parsedMinScore = Number.parseInt(req.query.minScore, 10);
     const minScore = Number.isFinite(parsedMinScore) ? Math.max(0, Math.min(100, parsedMinScore)) : 1;

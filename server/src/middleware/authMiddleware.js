@@ -2,21 +2,14 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { prisma } = require('../config/database');
 
-/**
- * Authentication Middleware
- * Validates JWT from Authorization Bearer header or HTTP-only cookies.
- * Attaches the authenticated user (without passwordHash) to req.user.
- */
 const authenticateToken = async (req, res, next) => {
   try {
     let token = null;
 
-    // Check Authorization header (format: "Bearer <token>")
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
     } else if (req.cookies && req.cookies.token) {
-      // Fallback to HttpOnly cookie
       token = req.cookies.token;
     }
 
@@ -27,10 +20,9 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Verify token validity and expiration
     const decoded = jwt.verify(token, config.jwtSecret);
 
-    // Verify user exists and remains active in database
+    // Yaha user id token se le rahe hain, frontend se bheji hui id pe trust nahi karna.
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       include: {
@@ -45,7 +37,6 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Never expose passwordHash on request user object
     const { passwordHash, ...userWithoutPassword } = user;
     req.user = userWithoutPassword;
 
@@ -69,11 +60,6 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-/**
- * Role-Based Authorization Middleware (RBAC)
- * Enforces backend permissions by validating that the authenticated user possesses one of the allowed roles.
- * @param  {...string} roles Allowed roles ('STUDENT', 'ALUMNI', 'ADMIN')
- */
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {

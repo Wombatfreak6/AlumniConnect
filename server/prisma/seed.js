@@ -3,11 +3,7 @@ const bcrypt = require('bcryptjs');
 const { prisma, disconnectDB } = require('../src/config/database');
 const config = require('../src/config');
 
-/**
- * Admin Seeding Script
- * Securely creates or updates the root administrator account using ADMIN_EMAIL and ADMIN_PASSWORD.
- * Guarantees that ADMIN creation is restricted exclusively to deliberate administrative execution.
- */
+// Admin account sirf is script se banta hai, public registration se nahi.
 async function seedAdmin() {
   console.log('--- Initializing Admin User Seed ---');
 
@@ -18,7 +14,6 @@ async function seedAdmin() {
     throw new Error('Set ADMIN_EMAIL and a unique ADMIN_PASSWORD with at least 12 characters, uppercase, lowercase, a number, and a symbol.');
   }
 
-  // Hash admin password with salt rounds = 10
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(adminPassword, salt);
 

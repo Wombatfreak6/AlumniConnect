@@ -146,7 +146,7 @@ export default function CreateJobPage() {
         title="Post a Career Opportunity"
         subtitle="Share job or internship openings directly with collegiate students and alumni peers"
       >
-        {apiError && <ErrorAlert message={apiError} onDismiss={() => setApiError(null)} />}
+        {apiError && <ErrorAlert message={apiError} />}
 
         <form onSubmit={handleSubmit} noValidate>
           <Input

@@ -90,6 +90,7 @@ enum RegistrationStatus {
   CANCELLED
 }
 
+/// Categories of in-app notification
 enum NotificationType {
   REFERRAL_RECEIVED
   REFERRAL_STATUS
@@ -99,10 +100,6 @@ enum NotificationType {
   EVENT_UPDATE
   SYSTEM
 }
-
-// ============================================================================
-// MODELS
-// ============================================================================
 
 /// Core user entity representing Students, Alumni, and Administrators
 model User {
@@ -315,7 +312,7 @@ model EventRegistration {
   @@index([status])
 }
 
-/// Persistent notifications delivered in-app and optionally by email
+/// In-app notifications, also optionally delivered by email
 model Notification {
   id        Int              @id @default(autoincrement())
   userId    Int

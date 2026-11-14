@@ -33,7 +33,6 @@ export default function JobBoardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filters and Pagination
   const [search, setSearch] = useState('');
   const [company, setCompany] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
@@ -44,7 +43,6 @@ export default function JobBoardPage() {
   const [limit] = useState(9);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
 
-  // Recommended jobs mode (for students)
   const [recommendedMode, setRecommendedMode] = useState(false);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [recLoading, setRecLoading] = useState(false);
@@ -88,7 +86,6 @@ export default function JobBoardPage() {
     };
   }, [search, company, locationFilter, skillFilter, employmentType, experienceLevel, page, limit, recommendedMode]);
 
-  // Load recommendations for students
   const loadRecommendations = async () => {
     setRecLoading(true);
     setError(null);
@@ -123,7 +120,6 @@ export default function JobBoardPage() {
 
   return (
     <div className="jobs-page container">
-      {/* 1. Header & Actions */}
       <div className="jobs-header">
         <div className="jobs-header-main">
           <div className="badge-strip" style={{ marginBottom: 'var(--space-2)' }}>
@@ -173,9 +169,8 @@ export default function JobBoardPage() {
         </div>
       </div>
 
-      {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+      {error && <ErrorAlert message={error} />}
 
-      {/* 2. Filter Bar (Disabled in Recommended Mode) */}
       {!recommendedMode && (
         <Card className="jobs-filter-card">
           <div className="jobs-filter-grid">
@@ -241,11 +236,9 @@ export default function JobBoardPage() {
         </Card>
       )}
 
-      {/* 3. Loading State */}
       {loading ? (
-        <Loading text="Scanning opportunity board..." fullScreen={false} />
+        <Loading message="Scanning opportunity board..." fullScreen={false} />
       ) : displayedJobs.length === 0 ? (
-        /* 4. Empty State */
         <div className="jobs-empty-state">
           <span className="empty-state-icon" aria-hidden="true">
             🔍
@@ -261,7 +254,6 @@ export default function JobBoardPage() {
           </Button>
         </div>
       ) : (
-        /* 5. Job Cards Grid */
         <div className="jobs-grid">
           {displayedJobs.map((job) => {
             const jobId = job.id || job.jobId;
@@ -375,7 +367,6 @@ export default function JobBoardPage() {
         </div>
       )}
 
-      {/* 6. Pagination Controls (Only in standard browse mode) */}
       {!recommendedMode && pagination.totalPages > 1 && (
         <div className="jobs-pagination">
           <div className="pagination-info">

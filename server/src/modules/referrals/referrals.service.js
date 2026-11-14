@@ -2,9 +2,6 @@ const { prisma } = require('../../config/database');
 const { validateStatusTransition } = require('./referrals.validation');
 const { notifySafely } = require('../notifications/notifications.service');
 
-/**
- * Common format function to cleanly present student skills in referral responses.
- */
 function formatStudentProfile(student) {
   if (!student) return null;
   const { userSkills, ...rest } = student;
@@ -19,16 +16,7 @@ function formatStudentProfile(student) {
   };
 }
 
-/**
- * Creates a referral request submitted by a student for a specific job.
- * Enforces:
- *  - Job existence
- *  - Disallows self-referral
- *  - Uniqueness constraint (one referral per student per job)
- *  - status defaults to PENDING
- */
 async function createReferral({ studentId, jobPostId, message }) {
-  // 1. Verify job post existence
   const job = await prisma.jobPost.findUnique({
     where: { id: jobPostId },
     select: {
@@ -45,14 +33,13 @@ async function createReferral({ studentId, jobPostId, message }) {
     throw error;
   }
 
-  // 2. Prevent self-referral
   if (job.postedById === studentId) {
     const error = new Error('Cannot request a referral for your own job posting.');
     error.statusCode = 400;
     throw error;
   }
 
-  // 3. Verify no existing referral (duplicate prevention)
+  // Ek student same job ke liye dobara referral nahi bhej sakta.
   const existingReferral = await prisma.jobReferral.findUnique({
     where: {
       studentId_jobPostId: {
@@ -68,7 +55,6 @@ async function createReferral({ studentId, jobPostId, message }) {
     throw error;
   }
 
-  // 4. Create the referral
   const referral = await prisma.jobReferral.create({
     data: {
       studentId,
@@ -115,10 +101,6 @@ async function createReferral({ studentId, jobPostId, message }) {
   return referral;
 }
 
-/**
- * Retrieves all incoming referrals received by the authenticated alumnus.
- * Supports filtering by referral status.
- */
 async function getAlumniReferrals(alumniId, status = null) {
   const where = { alumniId };
 
@@ -179,9 +161,6 @@ async function getAlumniReferrals(alumniId, status = null) {
   }));
 }
 
-/**
- * Retrieves all outgoing referral requests submitted by the authenticated student.
- */
 async function getStudentReferrals(studentId) {
   const referrals = await prisma.jobReferral.findMany({
     where: { studentId },
@@ -222,9 +201,6 @@ async function getStudentReferrals(studentId) {
   return referrals;
 }
 
-/**
- * Retrieves a single referral request by ID.
- */
 async function getReferralById(referralId) {
   const referral = await prisma.jobReferral.findUnique({
     where: { id: referralId },
@@ -263,13 +239,6 @@ async function getReferralById(referralId) {
   return referral;
 }
 
-/**
- * Updates a referral's status.
- * Enforces that:
- *  - The referral exists (404 if not)
- *  - Only the assigned alumnus (alumniId) can modify it (403 if not)
- *  - Only valid business lifecycle transitions are permitted (400 if invalid)
- */
 async function updateReferralStatus(referralId, newStatus, currentUserId) {
   const referral = await prisma.jobReferral.findUnique({
     where: { id: referralId },
@@ -281,14 +250,12 @@ async function updateReferralStatus(referralId, newStatus, currentUserId) {
     throw error;
   }
 
-  // Ownership verification
   if (referral.alumniId !== currentUserId) {
     const error = new Error('Forbidden: Only the assigned alumnus can update this referral request.');
     error.statusCode = 403;
     throw error;
   }
 
-  // State transition validation
   const transitionCheck = validateStatusTransition(referral.status, newStatus);
   if (!transitionCheck.isValid) {
     const error = new Error(transitionCheck.error);

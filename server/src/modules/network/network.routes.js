@@ -4,11 +4,6 @@ const { authenticateToken, authorizeRoles } = require('../../middleware/authMidd
 
 const router = Router();
 
-// ============================================================================
-// NETWORK & MATCHING RECOMMENDATION ROUTES (/api/network)
-// ============================================================================
-
-// STUDENT: Get matching alumni network recommendations
 router.get(
   '/matches',
   authenticateToken,
@@ -16,7 +11,6 @@ router.get(
   networkController.getAlumniMatches
 );
 
-// STUDENT: Get job recommendations (direct alias: /api/network/jobs/recommendations)
 router.get(
   '/jobs/recommendations',
   authenticateToken,

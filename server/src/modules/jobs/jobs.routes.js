@@ -6,13 +6,7 @@ const { authenticateToken, authorizeRoles } = require('../../middleware/authMidd
 
 const router = Router();
 
-// ============================================================================
-// IMPORTANT: Static routes must be registered BEFORE parameterised routes.
-// 'GET /my' must come before 'GET /:id' so Express does not treat the string
-// "my" as a jobId integer and pass it to validateIntegerId.
-// ============================================================================
-
-// Alumni: list their own job postings with referral summaries
+// Static routes must stay above /:id, otherwise "my" is treated as a job id.
 router.get(
   '/my',
   authenticateToken,
@@ -20,14 +14,12 @@ router.get(
   jobsController.getMyJobs
 );
 
-// All authenticated users: browse paginated, filtered job board
 router.get(
   '/',
   authenticateToken,
   jobsController.listJobs
 );
 
-// Alumni: create a new job post
 router.post(
   '/',
   authenticateToken,
@@ -35,7 +27,7 @@ router.post(
   jobsController.createJob
 );
 
-// Student: get intelligent job recommendations (Must be before /:id)
+// Also needs to stay above /:id.
 router.get(
   '/recommendations',
   authenticateToken,
@@ -43,14 +35,12 @@ router.get(
   networkController.getJobRecommendations
 );
 
-// All authenticated users: view full details of a single job
 router.get(
   '/:id',
   authenticateToken,
   jobsController.getJobById
 );
 
-// Student: request a referral for a specific job post
 router.post(
   '/:id/referrals',
   authenticateToken,
@@ -58,14 +48,12 @@ router.post(
   referralsController.requestReferral
 );
 
-// Original alumni poster or ADMIN: update a job post
 router.put(
   '/:id',
   authenticateToken,
   jobsController.updateJob
 );
 
-// Original alumni poster or ADMIN: delete a job post
 router.delete(
   '/:id',
   authenticateToken,

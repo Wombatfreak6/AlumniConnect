@@ -34,7 +34,7 @@ export default function AlumniDashboard() {
   }, []);
 
   if (loading) {
-    return <Loading text="Loading alumni portal..." fullScreen={false} />;
+    return <Loading message="Loading alumni portal..." fullScreen={false} />;
   }
 
   const currentUser = profileData || authUser;
@@ -43,7 +43,6 @@ export default function AlumniDashboard() {
 
   return (
     <div className="dashboard-page alumni-dashboard">
-      {/* 1. Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <div className="welcome-badge-strip">
@@ -70,9 +69,7 @@ export default function AlumniDashboard() {
         </div>
       </div>
 
-      {/* 2. Live Profile Overview Grid */}
       <div className="alumni-overview-grid">
-        {/* Company & Industry Information */}
         <Card
           title="Company & Industry Profile"
           subtitle="Your verified employer and industry sector"
@@ -115,7 +112,6 @@ export default function AlumniDashboard() {
           </div>
         </Card>
 
-        {/* Academic Alma Mater Overview */}
         <Card
           title="Collegiate Background"
           subtitle="Your graduation and department records"
@@ -146,7 +142,6 @@ export default function AlumniDashboard() {
         </Card>
       </div>
 
-      {/* 3. Live Skills and Mentorship Expertise */}
       <div className="alumni-expertise-grid">
         <Card
           title="Skills & Technical Domains"
@@ -201,7 +196,6 @@ export default function AlumniDashboard() {
         </Card>
       </div>
 
-      {/* 4. Community management */}
       <div className="modules-header">
         <h2 className="modules-title">Alumni Engagement Modules</h2>
         <p className="modules-subtitle">
@@ -210,7 +204,6 @@ export default function AlumniDashboard() {
       </div>
 
       <div className="modules-grid">
-        {/* Navigation to Job Management Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">💼</span>
@@ -241,7 +234,6 @@ export default function AlumniDashboard() {
           </div>
         </Card>
 
-        {/* Mentorship management */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">🎓</span>
@@ -252,11 +244,12 @@ export default function AlumniDashboard() {
             Publish upcoming office hours, update your availability, and respond to student requests.
           </p>
           <div className="module-footer">
-            <Link to="/mentorship/manage"><Button size="sm">Manage mentorship</Button></Link>
+            <Link to="/mentorship/manage">
+              <Button size="sm" variant="primary">Manage mentorship</Button>
+            </Link>
           </div>
         </Card>
 
-        {/* Event management */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">📅</span>
@@ -266,9 +259,13 @@ export default function AlumniDashboard() {
           <p className="module-desc">
             Host workshops and networking events, then review participant registrations.
           </p>
-          <div className="module-footer">
-            <Link to="/events"><Button size="sm" variant="outline">Browse events</Button></Link>
-            <Link to="/events/create"><Button size="sm">Create event</Button></Link>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <Link to="/events">
+              <Button size="sm" variant="outline">Browse events</Button>
+            </Link>
+            <Link to="/events/create">
+              <Button size="sm" variant="primary">Create event</Button>
+            </Link>
           </div>
         </Card>
       </div>

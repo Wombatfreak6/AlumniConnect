@@ -34,14 +34,13 @@ export default function StudentDashboard() {
   }, []);
 
   if (loading) {
-    return <Loading text="Loading student hub..." fullScreen={false} />;
+    return <Loading message="Loading student hub..." fullScreen={false} />;
   }
 
   const currentUser = profileData || authUser;
   const profile = currentUser?.profile || {};
   const skills = currentUser?.skills || [];
 
-  // Calculate Profile Completion Percentage
   const completionCriteria = [
     Boolean(currentUser?.name),
     Boolean(profile.college),
@@ -57,7 +56,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="dashboard-page student-dashboard">
-      {/* 1. Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <div className="welcome-badge-strip">
@@ -82,7 +80,6 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* 2. Profile Completion Indicator */}
       <Card className="completion-card">
         <div className="completion-header">
           <div>
@@ -128,9 +125,7 @@ export default function StudentDashboard() {
         </div>
       </Card>
 
-      {/* 3. Grid: Live Skills & Career Interests */}
       <div className="student-profile-overview-grid">
-        {/* Skills Overview */}
         <Card
           title="Skills & Technical Competencies"
           subtitle="Skills listed on your live collegiate profile"
@@ -160,7 +155,6 @@ export default function StudentDashboard() {
           )}
         </Card>
 
-        {/* Career Interests Overview */}
         <Card
           title="Career Interests & Direction"
           subtitle="Your professional focus and aspirations"
@@ -185,7 +179,6 @@ export default function StudentDashboard() {
         </Card>
       </div>
 
-      {/* 4. Connected community modules */}
       <div className="modules-header">
         <h2 className="modules-title">Your AlumniConnect Community</h2>
         <p className="modules-subtitle">
@@ -194,7 +187,6 @@ export default function StudentDashboard() {
       </div>
 
       <div className="modules-grid">
-        {/* Navigation to Intelligent Recommendations Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">⚡</span>
@@ -215,7 +207,6 @@ export default function StudentDashboard() {
           </div>
         </Card>
 
-        {/* Navigation to Jobs Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">💼</span>
@@ -241,7 +232,6 @@ export default function StudentDashboard() {
           </div>
         </Card>
 
-        {/* Mentorship */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">🤝</span>
@@ -251,13 +241,16 @@ export default function StudentDashboard() {
           <p className="module-desc">
             Browse alumni office hours, review mentor expertise, and send a focused guidance request.
           </p>
-          <div className="module-footer">
-            <Link to="/mentorship"><Button size="sm">Find a mentor</Button></Link>
-            <Link to="/mentorship/requests"><Button size="sm" variant="outline">My requests</Button></Link>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <Link to="/mentorship">
+              <Button size="sm" variant="primary">Find a mentor</Button>
+            </Link>
+            <Link to="/mentorship/requests">
+              <Button size="sm" variant="outline">My requests</Button>
+            </Link>
           </div>
         </Card>
 
-        {/* Network matches */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">👥</span>
@@ -268,11 +261,12 @@ export default function StudentDashboard() {
             Explore alumni ranked by shared skills, academic background, and career interests.
           </p>
           <div className="module-footer">
-            <Link to="/network/matches"><Button size="sm" variant="outline">Explore matches</Button></Link>
+            <Link to="/network/matches">
+              <Button size="sm" variant="outline">Explore matches</Button>
+            </Link>
           </div>
         </Card>
 
-        {/* Events */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">📅</span>
@@ -282,9 +276,13 @@ export default function StudentDashboard() {
           <p className="module-desc">
             Browse campus workshops, career sessions, alumni talks, and networking events.
           </p>
-          <div className="module-footer">
-            <Link to="/events"><Button size="sm" variant="outline">Browse events</Button></Link>
-            <Link to="/events/my"><Button size="sm" variant="outline">My events</Button></Link>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <Link to="/events">
+              <Button size="sm" variant="primary">Browse events</Button>
+            </Link>
+            <Link to="/events/my">
+              <Button size="sm" variant="outline">My events</Button>
+            </Link>
           </div>
         </Card>
       </div>

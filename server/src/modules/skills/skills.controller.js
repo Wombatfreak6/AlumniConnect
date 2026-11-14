@@ -1,9 +1,5 @@
 const skillsService = require('./skills.service');
 
-/**
- * GET /api/skills
- * Retrieves canonical list of all skills in the platform catalog.
- */
 async function getSkills(req, res, next) {
   try {
     const search = req.query.search || '';

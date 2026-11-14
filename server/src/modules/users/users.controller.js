@@ -5,10 +5,6 @@ const {
   validateIntegerId,
 } = require('./users.validation');
 
-/**
- * GET /api/users/me
- * Retrieves full profile of the logged-in user.
- */
 async function getMe(req, res, next) {
   try {
     const user = await usersService.getMyProfile(req.user.id);
@@ -24,10 +20,6 @@ async function getMe(req, res, next) {
   }
 }
 
-/**
- * PUT /api/users/me
- * Updates the logged-in user's profile information.
- */
 async function updateMe(req, res, next) {
   try {
     const { isValid, errors, sanitized } = validateProfileUpdate(req.body);
@@ -53,10 +45,6 @@ async function updateMe(req, res, next) {
   }
 }
 
-/**
- * GET /api/users/:id
- * Public discovery endpoint returning safe profile information.
- */
 async function getUserById(req, res, next) {
   try {
     const { isValid, error, id } = validateIntegerId(req.params.id, 'userId');
@@ -82,10 +70,6 @@ async function getUserById(req, res, next) {
   }
 }
 
-/**
- * POST /api/users/me/skills
- * Adds a skill to the authenticated user's profile.
- */
 async function addSkill(req, res, next) {
   try {
     const { isValid, errors, sanitized } = validateSkillInput(req.body);
@@ -111,10 +95,6 @@ async function addSkill(req, res, next) {
   }
 }
 
-/**
- * DELETE /api/users/me/skills/:skillId
- * Removes a skill from the authenticated user's profile.
- */
 async function removeSkill(req, res, next) {
   try {
     const { isValid, error, id: skillId } = validateIntegerId(req.params.skillId, 'skillId');

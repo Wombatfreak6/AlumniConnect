@@ -1,7 +1,15 @@
 import api from './api';
 
+function queryString(filters) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') params.set(key, value);
+  });
+  return params.size ? `?${params}` : '';
+}
+
 export const mentorshipService = {
-  getSlots: (filters = {}) => api.get(`/mentorship/slots?${new URLSearchParams(filters)}`),
+  getSlots: (filters = {}) => api.get(`/mentorship/slots${queryString(filters)}`),
   getMySlots: () => api.get('/mentorship/slots/my'),
   getSlot: (id) => api.get(`/mentorship/slots/${id}`),
   createSlot: (body) => api.post('/mentorship/slots', body),
@@ -14,7 +22,7 @@ export const mentorshipService = {
 };
 
 export const eventService = {
-  getEvents: (filters = {}) => api.get(`/events?${new URLSearchParams(filters)}`),
+  getEvents: (filters = {}) => api.get(`/events${queryString(filters)}`),
   getEvent: (id) => api.get(`/events/${id}`),
   create: (body) => api.post('/events', body),
   update: (id, body) => api.put(`/events/${id}`, body),

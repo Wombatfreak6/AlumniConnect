@@ -4,15 +4,13 @@ const { authenticateToken, authorizeRoles } = require('../../middleware/authMidd
 
 const router = Router();
 
-// Public endpoints
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 
-// Protected endpoints
 router.get('/me', authenticateToken, authController.getMe);
 
-// Admin-only protected endpoint (RBAC verification)
+// Simple endpoint used to verify that ADMIN-only access works.
 router.get('/admin/verify', authenticateToken, authorizeRoles('ADMIN'), (req, res) => {
   res.status(200).json({
     success: true,

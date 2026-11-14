@@ -9,6 +9,13 @@ import Loading from '../../components/common/Loading';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import './Jobs.css';
 
+function getReferralStatusStyle(status) {
+  if (status === 'ACCEPTED') return { backgroundColor: '#dcfce7', color: '#166534' };
+  if (status === 'REJECTED') return { backgroundColor: '#f1f5f9', color: '#475569' };
+  if (status === 'REVIEWED') return { backgroundColor: '#e0f2fe', color: '#0369a1' };
+  return { backgroundColor: '#fef3c7', color: '#92400e' };
+}
+
 export default function JobDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,7 +25,6 @@ export default function JobDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Referral Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [referralMessage, setReferralMessage] = useState('');
   const [submittingReferral, setSubmittingReferral] = useState(false);
@@ -27,7 +33,6 @@ export default function JobDetailsPage() {
   const [hasRequested, setHasRequested] = useState(false);
   const [existingReferralStatus, setExistingReferralStatus] = useState(null);
 
-  // Delete confirmation
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -79,7 +84,6 @@ export default function JobDetailsPage() {
     };
   }, [id, user?.role]);
 
-  // Handle referral submission
   const handleSubmitReferral = async (e) => {
     e.preventDefault();
     setSubmittingReferral(true);
@@ -103,7 +107,6 @@ export default function JobDetailsPage() {
     }
   };
 
-  // Handle job deletion
   const handleDeleteJob = async () => {
     setDeleting(true);
     try {
@@ -118,7 +121,7 @@ export default function JobDetailsPage() {
   };
 
   if (loading) {
-    return <Loading text="Loading opportunity details..." fullScreen={false} />;
+    return <Loading message="Loading opportunity details..." fullScreen={false} />;
   }
 
   if (error || !job) {
@@ -132,7 +135,7 @@ export default function JobDetailsPage() {
     );
   }
 
-  const isOwner = user && (user.id === job.postedById || user.userId === job.postedById);
+  const isOwner = user && user.id === job.postedById;
   const isAdmin = user?.role === 'ADMIN';
   const canManage = isOwner || isAdmin;
   const isStudent = user?.role === 'STUDENT';
@@ -147,7 +150,6 @@ export default function JobDetailsPage() {
 
   return (
     <div className="jobs-page container">
-      {/* Top Breadcrumb & Actions Bar */}
       <div
         style={{
           display: 'flex',
@@ -182,7 +184,6 @@ export default function JobDetailsPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Banner */}
       {showDeleteConfirm && (
         <div
           style={{
@@ -224,9 +225,7 @@ export default function JobDetailsPage() {
         </div>
       )}
 
-      {/* Main Two-Column Layout */}
       <div className="job-details-shell">
-        {/* Left Column: Job Description and Overview */}
         <div className="job-details-main">
           <Card className="job-details-hero">
             <div className="job-badges-strip">
@@ -323,7 +322,6 @@ export default function JobDetailsPage() {
           )}
         </div>
 
-        {/* Right Column: Alumni Poster & Action Sidebar */}
         <div className="job-sidebar-card">
           <Card className="poster-card" title="Alumni Referral Sponsor">
             <div className="poster-card-body">
@@ -379,7 +377,6 @@ export default function JobDetailsPage() {
                 )}
               </div>
 
-              {/* Student Action: Request Referral or View Existing Status */}
               {isStudent && (
                 <div style={{ marginTop: 'var(--space-4)' }}>
                   {hasRequested ? (
@@ -405,27 +402,12 @@ export default function JobDetailsPage() {
                       </div>
                       <div
                         style={{
+                          ...getReferralStatusStyle(existingReferralStatus),
                           display: 'inline-block',
                           padding: '0.25rem 0.75rem',
                           borderRadius: 'var(--radius-full)',
                           fontSize: 'var(--font-size-sm)',
                           fontWeight: 'var(--font-weight-semibold)',
-                          backgroundColor:
-                            existingReferralStatus === 'ACCEPTED'
-                              ? '#dcfce7'
-                              : existingReferralStatus === 'REJECTED'
-                              ? '#f1f5f9'
-                              : existingReferralStatus === 'REVIEWED'
-                              ? '#e0f2fe'
-                              : '#fef3c7',
-                          color:
-                            existingReferralStatus === 'ACCEPTED'
-                              ? '#166534'
-                              : existingReferralStatus === 'REJECTED'
-                              ? '#475569'
-                              : existingReferralStatus === 'REVIEWED'
-                              ? '#0369a1'
-                              : '#92400e',
                           marginBottom: 'var(--space-3)',
                         }}
                       >
@@ -464,7 +446,6 @@ export default function JobDetailsPage() {
                 </div>
               )}
 
-              {/* Alumni management shortcut */}
               {canManage && (
                 <div style={{ marginTop: 'var(--space-4)' }}>
                   <Link to="/jobs/my" style={{ textDecoration: 'none' }}>
@@ -479,7 +460,6 @@ export default function JobDetailsPage() {
         </div>
       </div>
 
-      {/* Referral Request Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -519,7 +499,7 @@ export default function JobDetailsPage() {
                     </p>
 
                     {referralError && (
-                      <ErrorAlert message={referralError} onDismiss={() => setReferralError(null)} />
+                      <ErrorAlert message={referralError} />
                     )}
 
                     <Textarea

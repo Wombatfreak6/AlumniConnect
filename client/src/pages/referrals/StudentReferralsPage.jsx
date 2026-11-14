@@ -39,42 +39,19 @@ export default function StudentReferralsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL');
-
-  const fetchReferrals = () => {
-    setLoading(true);
-    setError(null);
-    jobService
-      .getStudentReferrals()
-      .then((res) => {
-        if (res?.success && res?.data?.referrals) {
-          setReferrals(res.data.referrals);
-        } else {
-          setReferrals([]);
-        }
-      })
-      .catch((err) => {
-        setError(err.message || 'Failed to load referral history.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
+
     jobService
       .getStudentReferrals()
       .then((res) => {
         if (!isMounted) return;
-        if (res?.success && res?.data?.referrals) {
-          setReferrals(res.data.referrals);
-        } else {
-          setReferrals([]);
-        }
+        setReferrals(res?.data?.referrals || []);
       })
       .catch((err) => {
-        if (!isMounted) return;
-        setError(err.message || 'Failed to load referral history.');
+        if (isMounted) setError(err.message || 'Failed to load referral history.');
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -83,7 +60,7 @@ export default function StudentReferralsPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return 'N/A';
@@ -99,13 +76,11 @@ export default function StudentReferralsPage() {
     }
   };
 
-  // Filtered list based on active tab
   const filteredReferrals = referrals.filter((ref) => {
     if (activeTab === 'ALL') return true;
     return ref.status === activeTab;
   });
 
-  // Calculate status counts
   const counts = {
     ALL: referrals.length,
     PENDING: referrals.filter((r) => r.status === 'PENDING').length,
@@ -116,7 +91,6 @@ export default function StudentReferralsPage() {
 
   return (
     <div className="referrals-page container">
-      {/* Page Header */}
       <div className="referrals-header">
         <div>
           <h1 className="referrals-title">
@@ -127,7 +101,15 @@ export default function StudentReferralsPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button variant="outline" size="sm" onClick={fetchReferrals}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              setReloadKey((key) => key + 1);
+            }}
+          >
             🔄 Refresh
           </Button>
           <Link to="/jobs">
@@ -139,10 +121,9 @@ export default function StudentReferralsPage() {
       </div>
 
       {error && (
-        <ErrorAlert message={error} onDismiss={() => setError(null)} />
+        <ErrorAlert message={error} />
       )}
 
-      {/* Tabs Strip */}
       <div className="referrals-tabs">
         <button
           className={`referral-tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
@@ -176,9 +157,8 @@ export default function StudentReferralsPage() {
         </button>
       </div>
 
-      {/* Main Content Area */}
       {loading ? (
-        <Loading text="Loading your referral history..." fullScreen={false} />
+        <Loading message="Loading your referral history..." fullScreen={false} />
       ) : filteredReferrals.length === 0 ? (
         <Card className="empty-state-card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
           <div style={{ fontSize: '3rem', marginBottom: 'var(--space-2)' }}>📭</div>

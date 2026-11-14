@@ -3,10 +3,6 @@ const jwt = require('jsonwebtoken');
 const config = require('../../config');
 const { prisma } = require('../../config/database');
 
-/**
- * Generate a signed JSON Web Token
- * @param {Object} user User object containing id, email, role
- */
 function generateToken(user) {
   return jwt.sign(
     {
@@ -21,26 +17,16 @@ function generateToken(user) {
   );
 }
 
-/**
- * Hash a plain text password with bcrypt (salt rounds = 10)
- */
 async function hashPassword(plainPassword) {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(plainPassword, salt);
 }
 
-/**
- * Compare plain text password against stored bcrypt hash
- */
 async function comparePassword(plainPassword, passwordHash) {
   return bcrypt.compare(plainPassword, passwordHash);
 }
 
-/**
- * Register a new Student or Alumni user
- */
 async function registerUser({ name, email, password, role }) {
-  // Check for duplicate email
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
@@ -51,10 +37,9 @@ async function registerUser({ name, email, password, role }) {
     throw error;
   }
 
-  // Hash password
   const passwordHash = await hashPassword(password);
 
-  // Create User and auto-initialize 1-to-1 Profile
+  // Har naye user ke saath ek khaali Profile bhi bana dete hain.
   const user = await prisma.user.create({
     data: {
       name,
@@ -70,10 +55,7 @@ async function registerUser({ name, email, password, role }) {
     },
   });
 
-  // Generate JWT token
   const token = generateToken(user);
-
-  // Omit passwordHash from output
   const { passwordHash: _, ...safeUser } = user;
 
   return {
@@ -82,9 +64,6 @@ async function registerUser({ name, email, password, role }) {
   };
 }
 
-/**
- * Authenticate credentials and generate session token
- */
 async function loginUser({ email, password }) {
   const user = await prisma.user.findUnique({
     where: { email },
@@ -93,14 +72,13 @@ async function loginUser({ email, password }) {
     },
   });
 
-  // Generic failure for user not found or inactive account
+  // Same error for unknown email and wrong password, taaki account existence leak na ho.
   if (!user || !user.isActive) {
     const error = new Error('Invalid email or password.');
     error.statusCode = 401;
     throw error;
   }
 
-  // Verify password hash
   const isMatch = await comparePassword(password, user.passwordHash);
   if (!isMatch) {
     const error = new Error('Invalid email or password.');
@@ -108,10 +86,7 @@ async function loginUser({ email, password }) {
     throw error;
   }
 
-  // Generate JWT token
   const token = generateToken(user);
-
-  // Omit passwordHash from output
   const { passwordHash: _, ...safeUser } = user;
 
   return {
@@ -120,33 +95,10 @@ async function loginUser({ email, password }) {
   };
 }
 
-/**
- * Retrieve user profile by user ID
- */
-async function getUserById(id) {
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      profile: true,
-    },
-  });
-
-  if (!user || !user.isActive) {
-    const error = new Error('User not found or account deactivated.');
-    error.statusCode = 404;
-    throw error;
-  }
-
-  const { passwordHash: _, ...safeUser } = user;
-  return safeUser;
-}
-
 module.exports = {
   generateToken,
   hashPassword,
   comparePassword,
   registerUser,
   loginUser,
-  getUserById,
 };
-

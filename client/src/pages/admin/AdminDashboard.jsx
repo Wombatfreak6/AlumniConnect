@@ -21,61 +21,58 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
   const [search, setSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
   const [filterRole, setFilterRole] = useState('ALL');
+  const [reloadKey, setReloadKey] = useState(0);
   const [togglingId, setTogglingId] = useState(null);
   const [moderatingJobId, setModeratingJobId] = useState(null);
 
-  /**
-   * Fetch users from GET /api/admin/users
-   */
-  const fetchUsers = async (roleFilter = filterRole, searchQuery = search, page = 1) => {
-    setTableLoading(true);
-    setError(null);
-    try {
-      const params = {
-        page,
-        limit: 50,
-      };
-      if (roleFilter !== 'ALL') {
-        params.role = roleFilter;
-      }
-      if (searchQuery.trim()) {
-        params.search = searchQuery.trim();
-      }
-
-      const response = await adminService.getUsers(params);
-      if (response.data) {
-        setUsers(response.data.users || []);
-        setPagination(response.data.pagination || { total: 0, page, limit: 50, totalPages: 1 });
-        setPage(page);
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to fetch users directory.');
-    } finally {
-      setTableLoading(false);
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     let isMounted = true;
-    Promise.all([adminService.getUsers({ page: 1, limit: 50 }), adminService.getStats(), jobService.getJobs({ page: 1, limit: 5 })])
-      .then(([response, statsResponse, jobsResponse]) => {
+
+    Promise.all([adminService.getStats(), jobService.getJobs({ page: 1, limit: 5 })])
+      .then(([statsResponse, jobsResponse]) => {
         if (!isMounted) return;
         if (statsResponse.data?.stats) setStats(statsResponse.data.stats);
-        if (response.data) {
-          setUsers(response.data.users || []);
-          setPagination(response.data.pagination || { total: 0, page: 1, limit: 50, totalPages: 1 });
-        }
         setJobs(jobsResponse.data?.jobs || []);
       })
       .catch((err) => {
-        if (isMounted) {
-          setError(err.message || 'Failed to fetch users directory.');
-        }
+        if (isMounted) setError(err.message || 'Failed to load dashboard metrics.');
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const params = { page, limit: 50 };
+    if (filterRole !== 'ALL') params.role = filterRole;
+    if (activeSearch) params.search = activeSearch;
+
+    adminService
+      .getUsers(params)
+      .then((response) => {
+        if (!isMounted || !response.data) return;
+        setUsers(response.data.users || []);
+        setPagination(
+          response.data.pagination || {
+            total: response.data.users.length,
+            page,
+            limit: 50,
+            totalPages: 1,
+          }
+        );
+        setError(null);
+      })
+      .catch((err) => {
+        if (isMounted) setError(err.message || 'Failed to fetch users directory.');
       })
       .finally(() => {
         if (isMounted) {
+          setTableLoading(false);
           setLoading(false);
         }
       });
@@ -83,7 +80,7 @@ export default function AdminDashboard() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [filterRole, activeSearch, page, reloadKey]);
 
   const handleModerateJob = async (jobId) => {
     if (!window.confirm('Delete this job post? Any referral history attached to it will also be deleted.')) return;
@@ -101,17 +98,21 @@ export default function AdminDashboard() {
 
   const handleRoleFilterChange = (role) => {
     setFilterRole(role);
-    fetchUsers(role, search, 1);
+    setPage(1);
+    setTableLoading(true);
+    setError(null);
+    setReloadKey((key) => key + 1);
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchUsers(filterRole, search, 1);
+    setActiveSearch(search.trim());
+    setPage(1);
+    setTableLoading(true);
+    setError(null);
+    setReloadKey((key) => key + 1);
   };
 
-  /**
-   * Toggle user account status via PATCH /api/admin/users/:id/status
-   */
   const handleToggleStatus = async (user) => {
     if (user.role === 'ADMIN') {
       setError('Cannot modify the status of a System Administrator account.');
@@ -141,16 +142,14 @@ export default function AdminDashboard() {
     }
   };
 
-  // Derive actual metrics strictly from live database counts
   const totalUsers = stats.users;
 
   if (loading) {
-    return <Loading text="Loading administration console..." fullScreen={false} />;
+    return <Loading message="Loading administration console..." fullScreen={false} />;
   }
 
   return (
     <div className="dashboard-page admin-dashboard">
-      {/* 1. Admin Header & System Status */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <div className="welcome-badge-strip">
@@ -170,7 +169,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Status or Error Notice */}
       {statusMessage && (
         <div className="dashboard-alert-banner" role="status">
           <span>✅ {statusMessage}</span>
@@ -178,10 +176,9 @@ export default function AdminDashboard() {
       )}
 
       {error && (
-        <ErrorAlert message={error} onDismiss={() => setError(null)} />
+        <ErrorAlert message={error} />
       )}
 
-      {/* 2. Platform Overview Metrics (Derived strictly from live database counts) */}
       <section className="stats-grid">
         <StatCard
           title="Total Registered"
@@ -216,13 +213,11 @@ export default function AdminDashboard() {
         </Card>
       </section>
 
-      {/* 3. User Management Interface (Connected to Live Backend APIs) */}
       <section id="users">
         <Card
           title="Collegiate User Directory"
           subtitle="Audit, search, and manage account statuses across all registered users"
         >
-          {/* Search and Filters Controls */}
           <div className="admin-controls-bar">
             <form onSubmit={handleSearchSubmit} className="admin-search-wrapper">
               <Input
@@ -246,9 +241,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Directory Table */}
           {tableLoading ? (
-            <Loading text="Updating directory..." fullScreen={false} />
+            <Loading message="Updating directory..." fullScreen={false} />
           ) : (
             <div className="table-responsive">
               <table className="admin-table">
@@ -324,14 +318,19 @@ export default function AdminDashboard() {
           <div className="admin-pagination" aria-label="User directory pagination">
             <span>Page {pagination.page} of {pagination.totalPages} · {pagination.total} users</span>
             <div className="community-actions-inline">
-              <Button size="sm" variant="outline" disabled={page <= 1 || tableLoading} onClick={() => fetchUsers(filterRole, search, page - 1)}>Previous</Button>
-              <Button size="sm" variant="outline" disabled={page >= pagination.totalPages || tableLoading} onClick={() => fetchUsers(filterRole, search, page + 1)}>Next</Button>
+              <Button size="sm" variant="outline" disabled={page <= 1 || tableLoading} onClick={() => {
+                setTableLoading(true);
+                setPage((current) => Math.max(1, current - 1));
+              }}>Previous</Button>
+              <Button size="sm" variant="outline" disabled={page >= pagination.totalPages || tableLoading} onClick={() => {
+                setTableLoading(true);
+                setPage((current) => current + 1);
+              }}>Next</Button>
             </div>
           </div>
         </Card>
       </section>
 
-      {/* 4. Activity & Security Overview */}
       <section id="security">
         <Card title="Security & Architecture Overview">
           <div className="security-summary-grid">

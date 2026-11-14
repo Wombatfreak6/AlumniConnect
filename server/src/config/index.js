@@ -2,7 +2,7 @@ const path = require('path');
 const crypto = require('crypto');
 const dotenv = require('dotenv');
 
-// Load environment variables from server/.env, falling back to root .env
+// First look for server/.env, then fall back to the repo root .env.
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 

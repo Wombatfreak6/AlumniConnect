@@ -33,7 +33,6 @@ export default function RegisterPage() {
   };
 
   const handleRoleSelect = (role) => {
-    // Ensure only STUDENT or ALUMNI can ever be selected
     if (role === 'STUDENT' || role === 'ALUMNI') {
       setFormData((prev) => ({ ...prev, role }));
     }
@@ -42,14 +41,12 @@ export default function RegisterPage() {
   const validate = () => {
     const newErrors = {};
 
-    // 1. Name validation
     if (!formData.name.trim()) {
       newErrors.name = 'Full name is required.';
     } else if (formData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters long.';
     }
 
-    // 2. Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required.';
@@ -57,7 +54,7 @@ export default function RegisterPage() {
       newErrors.email = 'Please provide a valid email address.';
     }
 
-    // 3. Password validation (matching backend rules)
+    // Same password rule as the backend.
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!formData.password) {
       newErrors.password = 'Password is required.';
@@ -68,14 +65,12 @@ export default function RegisterPage() {
         'Password must contain at least one uppercase letter, one lowercase letter, and one number.';
     }
 
-    // 4. Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password.';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
 
-    // 5. Role validation
     if (formData.role !== 'STUDENT' && formData.role !== 'ALUMNI') {
       newErrors.role = 'Please select a valid account type.';
     }
@@ -102,7 +97,6 @@ export default function RegisterPage() {
         role: formData.role,
       });
 
-      // Redirect directly to the newly registered user's dashboard
       if (user.role === 'ALUMNI') {
         navigate('/alumni', { replace: true });
       } else {
@@ -129,12 +123,11 @@ export default function RegisterPage() {
       {apiError && (
         <ErrorAlert
           message={apiError}
-          onDismiss={() => setApiError('')}
+
         />
       )}
 
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        {/* Account Type Selector: Strictly Student and Alumni only */}
         <div>
           <label className="form-label" style={{ marginBottom: '6px', display: 'block' }}>
             Account Type <span style={{ color: 'var(--color-danger)' }}>*</span>
@@ -208,7 +201,7 @@ export default function RegisterPage() {
           <Button
             type="submit"
             variant="primary"
-            fullWidth
+            block
             isLoading={isSubmitting}
           >
             Register as {formData.role === 'ALUMNI' ? 'Alumni' : 'Student'}

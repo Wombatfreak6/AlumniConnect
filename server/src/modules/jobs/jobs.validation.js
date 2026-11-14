@@ -1,8 +1,3 @@
-/**
- * Input validation for Job Management module
- * Mirrors the style of users.validation.js — plain functions, no libraries.
- */
-
 const VALID_EMPLOYMENT_TYPES = ['FULL_TIME', 'PART_TIME', 'INTERNSHIP', 'CONTRACT', 'REMOTE'];
 const VALID_EXPERIENCE_LEVELS = ['ENTRY', 'MID', 'SENIOR', 'LEAD'];
 const VALID_REFERRAL_STATUSES = ['REVIEWED', 'ACCEPTED', 'REJECTED'];
@@ -10,17 +5,11 @@ const VALID_REFERRAL_STATUSES = ['REVIEWED', 'ACCEPTED', 'REJECTED'];
 const URL_REGEX =
   /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
 
-/**
- * Validates and sanitizes a job post creation or full-update payload.
- * @param {object} body  req.body
- * @param {boolean} requireAll  true for POST (all required fields must be present),
- *                              false for PUT (only provided fields are validated)
- */
+// requireAll is true for POST and false for PUT (partial update).
 function validateJobPost(body, requireAll = true) {
   const errors = [];
   const sanitized = {};
 
-  // ── title ────────────────────────────────────────────────────────────────
   if (body.title !== undefined) {
     if (typeof body.title !== 'string' || body.title.trim().length < 3) {
       errors.push('title must be a string of at least 3 characters.');
@@ -33,7 +22,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('title is required.');
   }
 
-  // ── description ──────────────────────────────────────────────────────────
   if (body.description !== undefined) {
     if (typeof body.description !== 'string' || body.description.trim().length < 10) {
       errors.push('description must be a string of at least 10 characters.');
@@ -46,7 +34,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('description is required.');
   }
 
-  // ── company ──────────────────────────────────────────────────────────────
   if (body.company !== undefined) {
     if (typeof body.company !== 'string' || body.company.trim().length < 2) {
       errors.push('company must be a string of at least 2 characters.');
@@ -59,7 +46,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('company is required.');
   }
 
-  // ── location ─────────────────────────────────────────────────────────────
   if (body.location !== undefined) {
     if (typeof body.location !== 'string' || body.location.trim().length < 2) {
       errors.push('location must be a string of at least 2 characters.');
@@ -72,7 +58,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('location is required.');
   }
 
-  // ── employmentType ───────────────────────────────────────────────────────
   if (body.employmentType !== undefined) {
     if (!VALID_EMPLOYMENT_TYPES.includes(body.employmentType)) {
       errors.push(
@@ -85,7 +70,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('employmentType is required.');
   }
 
-  // ── experienceLevel ──────────────────────────────────────────────────────
   if (body.experienceLevel !== undefined) {
     if (!VALID_EXPERIENCE_LEVELS.includes(body.experienceLevel)) {
       errors.push(
@@ -98,7 +82,6 @@ function validateJobPost(body, requireAll = true) {
     errors.push('experienceLevel is required.');
   }
 
-  // ── applicationUrl (optional) ─────────────────────────────────────────────
   if (body.applicationUrl !== undefined) {
     if (body.applicationUrl === null || body.applicationUrl === '') {
       sanitized.applicationUrl = null;
@@ -111,7 +94,6 @@ function validateJobPost(body, requireAll = true) {
     }
   }
 
-  // ── deadline (optional) ───────────────────────────────────────────────────
   if (body.deadline !== undefined) {
     if (body.deadline === null || body.deadline === '') {
       sanitized.deadline = null;
@@ -134,9 +116,6 @@ function validateJobPost(body, requireAll = true) {
   };
 }
 
-/**
- * Validates list/search query parameters for GET /api/jobs.
- */
 function validateJobListQuery(query) {
   const page = Math.max(1, parseInt(query.page, 10) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(query.limit, 10) || 10));
@@ -170,9 +149,6 @@ function validateJobListQuery(query) {
   return { page, limit, filters };
 }
 
-/**
- * Validates a positive integer route parameter (jobId, referralId, etc.)
- */
 function validateIntegerId(paramValue, paramName = 'id') {
   const id = Number(paramValue);
   if (!Number.isInteger(id) || id <= 0) {
@@ -185,10 +161,6 @@ function validateIntegerId(paramValue, paramName = 'id') {
   return { isValid: true, error: null, id };
 }
 
-/**
- * Validates a referral status update value.
- * Alumni can only transition to REVIEWED, ACCEPTED, or REJECTED.
- */
 function validateReferralStatusUpdate(body) {
   if (!body.status) {
     return { isValid: false, error: 'status is required.' };

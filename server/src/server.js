@@ -1,12 +1,10 @@
 const app = require('./app');
 const config = require('./config');
 const { connectDB, disconnectDB } = require('./config/database');
+const { flushEmailDeliveries } = require('./modules/notifications/notifications.service');
 
 let server;
 
-/**
- * Graceful application shutdown handler
- */
 async function handleShutdown(signal) {
   console.log(`\n[Server] Received ${signal}. Starting graceful shutdown...`);
 
@@ -17,6 +15,7 @@ async function handleShutdown(signal) {
   }
 
   try {
+    await flushEmailDeliveries();
     await disconnectDB();
     console.log('[Server] Graceful shutdown completed cleanly');
     process.exit(0);
@@ -26,15 +25,10 @@ async function handleShutdown(signal) {
   }
 }
 
-/**
- * Starts the HTTP server and verifies database connection
- */
 async function startServer(port = config.port) {
   try {
-    // 1. Verify database connection
     await connectDB();
 
-    // 2. Start HTTP listener
     server = app.listen(port, () => {
       console.log(`[Server] AlumniConnect running on http://localhost:${port}`);
     });
@@ -55,7 +49,6 @@ async function startServer(port = config.port) {
   }
 }
 
-// Process signals for graceful termination
 process.on('SIGINT', () => handleShutdown('SIGINT'));
 process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 
@@ -68,7 +61,6 @@ process.on('uncaughtException', (error) => {
   handleShutdown('uncaughtException');
 });
 
-// Run server directly when executed as main module
 if (require.main === module) {
   startServer();
 }

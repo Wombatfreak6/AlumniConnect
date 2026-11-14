@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 import useAuth from '../../hooks/useAuth';
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
-/**
- * Main Application Top Navbar
- * Dynamically displays authenticated user profile, role-specific navigation, and logout action.
- */
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -30,7 +27,6 @@ export default function Navbar() {
           <span>AlumniConnect</span>
         </Link>
 
-        {/* Mobile menu toggle */}
         <button
           type="button"
           className="navbar-toggle"
@@ -47,7 +43,6 @@ export default function Navbar() {
           </svg>
         </button>
 
-        {/* Navigation Links and Actions */}
         <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
           <nav>
             <ul className="navbar-nav">
@@ -57,7 +52,6 @@ export default function Navbar() {
                 </NavLink>
               </li>
 
-              {/* Student Hub: visible if guest or student/admin */}
               {(!isAuthenticated || user?.role === 'STUDENT' || user?.role === 'ADMIN') && (
                 <li>
                   <NavLink to="/student" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
@@ -66,7 +60,6 @@ export default function Navbar() {
                 </li>
               )}
 
-              {/* Alumni Portal: visible if guest or alumni/admin */}
               {(!isAuthenticated || user?.role === 'ALUMNI' || user?.role === 'ADMIN') && (
                 <li>
                   <NavLink to="/alumni" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
@@ -75,7 +68,6 @@ export default function Navbar() {
                 </li>
               )}
 
-              {/* Admin Console: strictly ADMIN only */}
               {user?.role === 'ADMIN' && (
                 <li>
                   <NavLink to="/admin" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
@@ -84,7 +76,6 @@ export default function Navbar() {
                 </li>
               )}
 
-              {/* Profile: visible when authenticated */}
               {isAuthenticated && (
                 <li>
                   <NavLink to="/profile" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
@@ -98,6 +89,7 @@ export default function Navbar() {
           <div className="navbar-actions">
             {isAuthenticated ? (
               <div className="navbar-auth-user">
+                <NotificationBell />
                 <span className="navbar-user-tag">
                   <span className="navbar-user-name">{user?.name}</span>
                   <span className={`badge badge-${user?.role?.toLowerCase()}`}>{user?.role}</span>

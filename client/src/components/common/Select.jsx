@@ -1,9 +1,6 @@
 import React, { useId } from 'react';
 import './Form.css';
 
-/**
- * Reusable Select Dropdown Component
- */
 export default function Select({
   label,
   id,

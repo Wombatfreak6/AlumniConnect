@@ -1,8 +1,3 @@
-/**
- * Centralized Error Handling Middleware
- * Catches all unhandled synchronous and asynchronous errors forwarded via next(err).
- * Ensures a consistent error response structure and logs error details.
- */
 const errorMiddleware = (err, req, res, next) => {
   let statusCode = 500;
   if (err.statusCode && err.statusCode >= 400 && err.statusCode < 600) {
@@ -11,7 +6,7 @@ const errorMiddleware = (err, req, res, next) => {
     statusCode = res.statusCode;
   }
 
-  // Handle Prisma specific errors
+  // Prisma ke common errors ko friendly message mein badal rahe hain.
   let message = err.message || 'Internal Server Error';
   if (err.code === 'P2002') {
     statusCode = 409;

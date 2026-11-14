@@ -1,7 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Load environment variables from server/.env, falling back to root .env
+// First look for server/.env, then fall back to the repo root .env.
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
@@ -14,6 +14,14 @@ const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   adminEmail: process.env.ADMIN_EMAIL || 'admin@alumniconnect.edu',
   adminPassword: process.env.ADMIN_PASSWORD || 'Admin@Secure2026!',
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+    from: process.env.SMTP_FROM || '',
+  },
   cookie: {
     name: 'token',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms

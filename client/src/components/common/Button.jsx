@@ -1,11 +1,6 @@
 import React from 'react';
 import './Button.css';
 
-/**
- * Reusable Button Component
- * Supports variants: primary, secondary, outline, danger, ghost
- * Sizes: sm, md, lg
- */
 export default function Button({
   children,
   variant = 'primary',

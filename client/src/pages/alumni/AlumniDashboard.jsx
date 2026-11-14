@@ -34,7 +34,7 @@ export default function AlumniDashboard() {
   }, []);
 
   if (loading) {
-    return <Loading text="Loading alumni portal..." fullScreen={false} />;
+    return <Loading message="Loading alumni portal..." fullScreen={false} />;
   }
 
   const currentUser = profileData || authUser;
@@ -43,7 +43,6 @@ export default function AlumniDashboard() {
 
   return (
     <div className="dashboard-page alumni-dashboard">
-      {/* 1. Welcome Section */}
       <div className="dashboard-welcome">
         <div className="welcome-text">
           <div className="welcome-badge-strip">
@@ -70,9 +69,7 @@ export default function AlumniDashboard() {
         </div>
       </div>
 
-      {/* 2. Live Profile Overview Grid */}
       <div className="alumni-overview-grid">
-        {/* Company & Industry Information */}
         <Card
           title="Company & Industry Profile"
           subtitle="Your verified employer and industry sector"
@@ -115,7 +112,6 @@ export default function AlumniDashboard() {
           </div>
         </Card>
 
-        {/* Academic Alma Mater Overview */}
         <Card
           title="Collegiate Background"
           subtitle="Your graduation and department records"
@@ -146,7 +142,6 @@ export default function AlumniDashboard() {
         </Card>
       </div>
 
-      {/* 3. Live Skills and Mentorship Expertise */}
       <div className="alumni-expertise-grid">
         <Card
           title="Skills & Technical Domains"
@@ -201,16 +196,14 @@ export default function AlumniDashboard() {
         </Card>
       </div>
 
-      {/* 4. Future Modules Navigation & Clear Placeholders */}
       <div className="modules-header">
         <h2 className="modules-title">Alumni Engagement Modules</h2>
         <p className="modules-subtitle">
-          Modules under active development by your AlumniConnect engineering team
+          Share your experience and create opportunities for students.
         </p>
       </div>
 
       <div className="modules-grid">
-        {/* Navigation to Job Management Live Card */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">💼</span>
@@ -241,35 +234,38 @@ export default function AlumniDashboard() {
           </div>
         </Card>
 
-        {/* Navigation to Mentorship Placeholder */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">🎓</span>
-            <span className="module-status-badge badge-phase">Phase 3 • Member 3</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">Mentorship & Office Hours</h3>
           <p className="module-desc">
-            Configure weekly office hours, accept mentee guidance requests, and schedule 1-on-1 sessions.
-            Member 3 is actively developing the MentorshipSlot booking module.
+            Publish upcoming office hours, update your availability, and respond to student requests.
           </p>
           <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Mentorship Engine</span>
+            <Link to="/mentorship/manage">
+              <Button size="sm" variant="primary">Manage mentorship</Button>
+            </Link>
           </div>
         </Card>
 
-        {/* Navigation to Events Placeholder */}
         <Card className="module-card">
           <div className="module-top">
             <span className="module-icon" aria-hidden="true">📅</span>
-            <span className="module-status-badge badge-future">Upcoming</span>
+            <span className="module-status-badge badge-active">Available now</span>
           </div>
           <h3 className="module-name">Campus Events & Tech Talks</h3>
           <p className="module-desc">
-            Participate in university panels, host virtual engineering seminars, and register for
-            campus alumni reunions organized with institutional administration.
+            Host workshops and networking events, then review participant registrations.
           </p>
-          <div className="module-footer">
-            <span className="placeholder-tag">Placeholder — Events Engine</span>
+          <div className="module-footer" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <Link to="/events">
+              <Button size="sm" variant="outline">Browse events</Button>
+            </Link>
+            <Link to="/events/create">
+              <Button size="sm" variant="primary">Create event</Button>
+            </Link>
           </div>
         </Card>
       </div>

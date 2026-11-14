@@ -2,10 +2,6 @@ const adminService = require('./admin.service');
 const { validateUserListQuery, validateStatusUpdate } = require('./admin.validation');
 const { validateIntegerId } = require('../users/users.validation');
 
-/**
- * GET /api/admin/users
- * Administrative endpoint to list users with filtering & pagination.
- */
 async function getUsers(req, res, next) {
   try {
     const params = validateUserListQuery(req.query);
@@ -21,10 +17,6 @@ async function getUsers(req, res, next) {
   }
 }
 
-/**
- * GET /api/admin/users/:id
- * Administrative endpoint to fetch detailed user record.
- */
 async function getUserById(req, res, next) {
   try {
     const { isValid, error, id } = validateIntegerId(req.params.id, 'userId');
@@ -50,10 +42,6 @@ async function getUserById(req, res, next) {
   }
 }
 
-/**
- * PATCH /api/admin/users/:id/status
- * Administrative endpoint to activate or deactivate a user account.
- */
 async function updateStatus(req, res, next) {
   try {
     const { isValid: isIdValid, error: idError, id } = validateIntegerId(req.params.id, 'userId');

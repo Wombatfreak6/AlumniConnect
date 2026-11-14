@@ -4,11 +4,6 @@ const { authenticateToken, authorizeRoles } = require('../../middleware/authMidd
 
 const router = Router();
 
-// ============================================================================
-// REFERRAL MANAGEMENT ROUTES (/api/referrals)
-// ============================================================================
-
-// ALUMNI: update referral status (REVIEWED, ACCEPTED, REJECTED)
 router.patch(
   '/:id/status',
   authenticateToken,
@@ -16,7 +11,6 @@ router.patch(
   referralsController.updateStatus
 );
 
-// ALUMNI: get incoming referrals (alias: /api/referrals/alumni)
 router.get(
   '/alumni',
   authenticateToken,
@@ -24,7 +18,6 @@ router.get(
   referralsController.getAlumniReferrals
 );
 
-// STUDENT: get submitted referrals (alias: /api/referrals/student)
 router.get(
   '/student',
   authenticateToken,

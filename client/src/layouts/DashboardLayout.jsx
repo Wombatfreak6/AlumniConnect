@@ -5,16 +5,12 @@ import Sidebar from '../components/navigation/Sidebar';
 import useAuth from '../hooks/useAuth';
 import './DashboardLayout.css';
 
-/**
- * Common Dashboard Layout
- * Shared layout for Student, Alumni, and Admin portals.
- */
 export default function DashboardLayout({ defaultRole }) {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Infer active role: route-specific overrides or authenticated user role
-  let currentRole = defaultRole;
+  // Admins keep the admin console when they open shared pages.
+  let currentRole = user?.role === 'ADMIN' ? 'ADMIN' : defaultRole;
   if (!currentRole) {
     if (
       location.pathname.startsWith('/alumni') ||
@@ -36,7 +32,6 @@ export default function DashboardLayout({ defaultRole }) {
     }
   }
 
-  // Sidebar navigation presets per role
   const sidebarConfigs = {
     STUDENT: {
       title: 'Student Hub',
@@ -45,7 +40,9 @@ export default function DashboardLayout({ defaultRole }) {
         { label: 'Smart Matches', path: '/network/matches', icon: '⚡', badge: 'AI' },
         { label: 'Job Opportunities', path: '/jobs', icon: '💼' },
         { label: 'My Referrals', path: '/referrals/my', icon: '🤝' },
-        { label: 'Find Mentors', path: '/student#mentors', icon: '🎓', badge: '3 Available' },
+        { label: 'Find Mentors', path: '/mentorship', icon: '🎓' },
+        { label: 'Events', path: '/events', icon: '📅' },
+        { label: 'My Events', path: '/events/my', icon: '🗓️' },
         { label: 'My Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -56,7 +53,9 @@ export default function DashboardLayout({ defaultRole }) {
         { label: 'Job Board', path: '/jobs', icon: '💼' },
         { label: 'My Job Postings', path: '/jobs/my', icon: '📋' },
         { label: 'Referral Requests', path: '/referrals/received', icon: '📥' },
-        { label: 'Mentorship Requests', path: '/alumni#requests', icon: '🎓', badge: '2 Pending' },
+        { label: 'Mentorship', path: '/mentorship/manage', icon: '🎓' },
+        { label: 'Events', path: '/events', icon: '📅' },
+        { label: 'My Events', path: '/events/my', icon: '🗓️' },
         { label: 'Public Profile', path: '/profile', icon: '👤' },
       ],
     },
@@ -65,6 +64,8 @@ export default function DashboardLayout({ defaultRole }) {
       items: [
         { label: 'Platform Metrics', path: '/admin', icon: '📈', exact: true },
         { label: 'Job Board', path: '/jobs', icon: '💼' },
+        { label: 'Mentorship Activity', path: '/mentorship/requests', icon: '🎓' },
+        { label: 'Events', path: '/events', icon: '📅' },
         { label: 'User Directory', path: '/admin#users', icon: '👥' },
         { label: 'Access Control', path: '/admin#security', icon: '🛡️' },
         { label: 'Admin Profile', path: '/profile', icon: '👤' },

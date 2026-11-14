@@ -1,22 +1,13 @@
 const { prisma } = require('../../config/database');
 const { MATCHING_WEIGHTS, STOP_WORDS } = require('./matching.constants');
 
-// ============================================================================
-// PURE UTILITY & SCORING FUNCTIONS (Independently testable)
-// ============================================================================
-
-/**
- * Normalizes text to lowercase and trims surrounding whitespace.
- */
+// Scoring helpers. Each one is pure, so they are easy to test in isolation.
 function normalizeText(str) {
   if (!str || typeof str !== 'string') return '';
   return str.trim().toLowerCase();
 }
 
-/**
- * Tokenizes text into a set of meaningful, lowercased keywords.
- * Removes common stop-words and tokens under 3 characters.
- */
+// Drops stop-words and very short tokens so only meaningful keywords remain.
 function extractKeywords(text) {
   if (!text || typeof text !== 'string') return new Set();
   
@@ -30,10 +21,7 @@ function extractKeywords(text) {
   return new Set(tokens);
 }
 
-/**
- * Detects canonical skills mentioned in text (job title, description, or bio).
- * Uses case-insensitive whole-word boundary matching.
- */
+// Case-insensitive whole-word check so "Java" does not match inside "JavaScript".
 function detectSkillsInText(text, skillCatalog = []) {
   if (!text || typeof text !== 'string' || !Array.isArray(skillCatalog)) return [];
 
@@ -59,10 +47,7 @@ function detectSkillsInText(text, skillCatalog = []) {
   return Array.from(new Set(detected));
 }
 
-/**
- * 1. SKILL OVERLAP (Max: 50 points)
- * Formula: (matching skills / total required skills) * 50
- */
+// Skill score (max 50): matching skills / required skills, scaled to 50.
 function calculateSkillScore(studentSkills = [], requiredSkills = []) {
   if (!Array.isArray(requiredSkills) || requiredSkills.length === 0) {
     return {
@@ -92,10 +77,7 @@ function calculateSkillScore(studentSkills = [], requiredSkills = []) {
   };
 }
 
-/**
- * 2. ACADEMIC BRANCH ALIGNMENT (Max: 30 points)
- * Exact normalized match = 30 points, no match = 0 points.
- */
+// Branch score (max 30): exact normalized match only, otherwise 0.
 function calculateBranchScore(studentBranch, targetBranch) {
   const normStudent = normalizeText(studentBranch);
   const normTarget = normalizeText(targetBranch);
@@ -108,7 +90,6 @@ function calculateBranchScore(studentBranch, targetBranch) {
     return MATCHING_WEIGHTS.BRANCH;
   }
 
-  // Common academic department alias normalizations
   const aliases = {
     'cse': 'computer science',
     'cs': 'computer science',
@@ -129,11 +110,7 @@ function calculateBranchScore(studentBranch, targetBranch) {
   return 0;
 }
 
-/**
- * 3. INDUSTRY / CAREER INTEREST (Max: 20 points)
- * Meaningful normalized keyword overlap between student's career aspirations
- * and the opportunity/alumni context.
- */
+// Industry score (max 20): overlap between career goals and the opportunity context.
 function calculateIndustryScore(studentProfile = {}, targetContext = {}) {
   const studentGoals = studentProfile.careerGoals || '';
   const studentIndustry = studentProfile.industry || '';
@@ -159,7 +136,6 @@ function calculateIndustryScore(studentProfile = {}, targetContext = {}) {
 
   const targetKeywords = extractKeywords(targetText);
 
-  // Exact direct match on industry name if provided
   if (
     studentIndustry &&
     targetContext.industry &&
@@ -183,9 +159,6 @@ function calculateIndustryScore(studentProfile = {}, targetContext = {}) {
   return Math.min(MATCHING_WEIGHTS.INDUSTRY, Math.round(ratio * MATCHING_WEIGHTS.INDUSTRY));
 }
 
-/**
- * Generates human-readable, transparent reasoning for the match.
- */
 function generateMatchReason({ skillScore, branchScore, industryScore, matchedSkills, branchName }) {
   const parts = [];
 
@@ -212,13 +185,6 @@ function generateMatchReason({ skillScore, branchScore, industryScore, matchedSk
   return parts.join(' and ');
 }
 
-// ============================================================================
-// DATABASE-DRIVEN MATCHING METHODS
-// ============================================================================
-
-/**
- * Retrieves the student profile and associated skills for matching.
- */
 async function getStudentMatchingContext(studentId) {
   const student = await prisma.user.findUnique({
     where: { id: studentId },
@@ -245,20 +211,14 @@ async function getStudentMatchingContext(studentId) {
   };
 }
 
-/**
- * GET /api/jobs/recommendations
- * Matches and ranks available jobs for the currently authenticated student.
- */
 async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
-  // 1. Fetch canonical skill catalog for text extraction
   const canonicalSkills = await prisma.skill.findMany({
     select: { name: true },
   });
 
-  // 2. Fetch all active job postings with poster details
   const jobs = await prisma.jobPost.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
@@ -281,17 +241,15 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
     },
   });
 
-  // 3. Compute score for each job
   const recommendations = [];
 
   for (const job of jobs) {
     const posterProfile = job.postedBy?.profile || {};
 
-    // A. Detect required skills from job title and description
     const textToScan = `${job.title} ${job.description}`;
     let requiredSkills = detectSkillsInText(textToScan, canonicalSkills);
 
-    // If job has no detected skills, consider student's own skills that might appear
+    // Agar job text se koi skill detect nahi hui, student ki skills se dobara try karte hain.
     if (requiredSkills.length === 0 && studentSkills.length > 0) {
       requiredSkills = detectSkillsInText(textToScan, studentSkills);
     }
@@ -301,10 +259,8 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
       requiredSkills
     );
 
-    // B. Academic branch alignment
     const branchScore = calculateBranchScore(studentProfile.branch, posterProfile.branch);
 
-    // C. Industry and career interest
     const industryScore = calculateIndustryScore(studentProfile, {
       company: job.company,
       title: job.title,
@@ -312,6 +268,7 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
       industry: posterProfile.industry,
     });
 
+    // Teenon scores ko jodkar final match percentage nikalte hain.
     const totalScore = Math.min(100, skillScore + branchScore + industryScore);
 
     if (totalScore >= minScore) {
@@ -348,21 +305,15 @@ async function getJobRecommendations(studentId, { minScore = 0, limit = 20 } = {
     }
   }
 
-  // 4. Sort descending by matchScore
   recommendations.sort((a, b) => b.matchScore - a.matchScore);
 
   return recommendations.slice(0, limit);
 }
 
-/**
- * GET /api/network/matches
- * Matches and ranks alumni peers for networking based on skill, branch, and industry.
- */
 async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
   const { profile: studentProfile, skills: studentSkills } =
     await getStudentMatchingContext(studentId);
 
-  // Fetch all active alumni (excluding the calling student)
   const alumniList = await prisma.user.findMany({
     where: {
       role: 'ALUMNI',
@@ -383,16 +334,12 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
     const alumniProfile = alumni.profile || {};
     const alumniSkills = (alumni.userSkills || []).map((us) => us.skill.name);
 
-    // A. Skill overlap against alumni's skills
     const { score: skillScore, matchedSkills } = calculateSkillScore(
       studentSkills,
       alumniSkills
     );
 
-    // B. Academic branch alignment
     const branchScore = calculateBranchScore(studentProfile.branch, alumniProfile.branch);
-
-    // C. Industry and career interest
     const industryScore = calculateIndustryScore(studentProfile, {
       company: alumniProfile.company,
       designation: alumniProfile.designation,
@@ -433,14 +380,12 @@ async function getAlumniMatches(studentId, { minScore = 0, limit = 20 } = {}) {
     }
   }
 
-  // Sort descending by matchScore
   matches.sort((a, b) => b.matchScore - a.matchScore);
 
   return matches.slice(0, limit);
 }
 
 module.exports = {
-  // Pure utilities for unit testing
   normalizeText,
   extractKeywords,
   detectSkillsInText,
@@ -448,7 +393,6 @@ module.exports = {
   calculateBranchScore,
   calculateIndustryScore,
   generateMatchReason,
-  // Database service operations
   getJobRecommendations,
   getAlumniMatches,
 };

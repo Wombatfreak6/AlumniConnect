@@ -1,0 +1,18 @@
+const { Router } = require('express');
+const controller = require('./events.controller');
+const { authenticateToken, authorizeRoles } = require('../../middleware/authMiddleware');
+
+const router = Router();
+router.use(authenticateToken);
+
+router.get('/', controller.list);
+router.get('/my-events', controller.mine);
+router.post('/', authorizeRoles('ALUMNI', 'ADMIN'), controller.create);
+router.get('/:id/participants', authorizeRoles('ALUMNI', 'ADMIN'), controller.participants);
+router.post('/:id/register', authorizeRoles('STUDENT', 'ALUMNI'), controller.register);
+router.delete('/:id/register', authorizeRoles('STUDENT', 'ALUMNI'), controller.cancel);
+router.get('/:id', controller.get);
+router.put('/:id', authorizeRoles('ALUMNI', 'ADMIN'), controller.update);
+router.delete('/:id', authorizeRoles('ALUMNI', 'ADMIN'), controller.remove);
+
+module.exports = router;

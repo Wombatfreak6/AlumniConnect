@@ -41,42 +41,19 @@ export default function AlumniReferralsPage() {
   const [successFeedback, setSuccessFeedback] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL');
   const [updatingId, setUpdatingId] = useState(null);
-
-  const fetchReferrals = () => {
-    setLoading(true);
-    setError(null);
-    jobService
-      .getAlumniReferrals()
-      .then((res) => {
-        if (res?.success && res?.data?.referrals) {
-          setReferrals(res.data.referrals);
-        } else {
-          setReferrals([]);
-        }
-      })
-      .catch((err) => {
-        setError(err.message || 'Failed to load received referral requests.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
+
     jobService
       .getAlumniReferrals()
       .then((res) => {
         if (!isMounted) return;
-        if (res?.success && res?.data?.referrals) {
-          setReferrals(res.data.referrals);
-        } else {
-          setReferrals([]);
-        }
+        setReferrals(res?.data?.referrals || []);
       })
       .catch((err) => {
-        if (!isMounted) return;
-        setError(err.message || 'Failed to load received referral requests.');
+        if (isMounted) setError(err.message || 'Failed to load received referral requests.');
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -85,9 +62,8 @@ export default function AlumniReferralsPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadKey]);
 
-  // Handle status update
   const handleUpdateStatus = async (referralId, newStatus, studentName) => {
     setUpdatingId(referralId);
     setError(null);
@@ -95,7 +71,7 @@ export default function AlumniReferralsPage() {
     try {
       const res = await jobService.updateReferralStatus(referralId, newStatus);
       if (res?.success) {
-        // Optimistically or accurately update the local referral status
+        // Update the row locally instead of refetching the whole list.
         setReferrals((prev) =>
           prev.map((r) =>
             r.id === referralId ? { ...r, status: newStatus } : r
@@ -132,13 +108,11 @@ export default function AlumniReferralsPage() {
     }
   };
 
-  // Tab filtering
   const filteredReferrals = referrals.filter((ref) => {
     if (activeTab === 'ALL') return true;
     return ref.status === activeTab;
   });
 
-  // Calculate status counts
   const counts = {
     ALL: referrals.length,
     PENDING: referrals.filter((r) => r.status === 'PENDING').length,
@@ -149,7 +123,6 @@ export default function AlumniReferralsPage() {
 
   return (
     <div className="referrals-page container">
-      {/* Page Header */}
       <div className="referrals-header">
         <div>
           <h1 className="referrals-title">
@@ -160,7 +133,15 @@ export default function AlumniReferralsPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button variant="outline" size="sm" onClick={fetchReferrals}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              setReloadKey((key) => key + 1);
+            }}
+          >
             🔄 Refresh
           </Button>
           <Link to="/jobs/my">
@@ -176,7 +157,6 @@ export default function AlumniReferralsPage() {
         </div>
       </div>
 
-      {/* Success Banner */}
       {successFeedback && (
         <div
           style={{
@@ -209,10 +189,9 @@ export default function AlumniReferralsPage() {
       )}
 
       {error && (
-        <ErrorAlert message={error} onDismiss={() => setError(null)} />
+        <ErrorAlert message={error} />
       )}
 
-      {/* Tabs Strip */}
       <div className="referrals-tabs">
         <button
           className={`referral-tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
@@ -246,9 +225,8 @@ export default function AlumniReferralsPage() {
         </button>
       </div>
 
-      {/* Main Content Area */}
       {loading ? (
-        <Loading text="Loading received referral requests..." fullScreen={false} />
+        <Loading message="Loading received referral requests..." fullScreen={false} />
       ) : filteredReferrals.length === 0 ? (
         <Card className="empty-state-card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
           <div style={{ fontSize: '3rem', marginBottom: 'var(--space-2)' }}>📬</div>
@@ -409,7 +387,6 @@ export default function AlumniReferralsPage() {
                   </div>
 
                   <div className="referral-action-buttons">
-                    {/* When PENDING: Can Mark Reviewed, Accept, or Reject */}
                     {referral.status === 'PENDING' && (
                       <>
                         <Button
@@ -445,7 +422,6 @@ export default function AlumniReferralsPage() {
                       </>
                     )}
 
-                    {/* When REVIEWED: Can Accept or Reject */}
                     {referral.status === 'REVIEWED' && (
                       <>
                         <Button
@@ -471,7 +447,6 @@ export default function AlumniReferralsPage() {
                       </>
                     )}
 
-                    {/* Terminal States: ACCEPTED / REJECTED */}
                     {referral.status === 'ACCEPTED' && (
                       <span
                         style={{

@@ -1,9 +1,6 @@
 import React, { useId } from 'react';
 import './Form.css';
 
-/**
- * Reusable Form Input Component
- */
 export default function Input({
   label,
   id,

@@ -4,57 +4,35 @@ import { AuthContext } from './authContextInstance';
 
 export { AuthContext };
 
-/**
- * Central Authentication Provider
- * Manages user state, initial session restoration via GET /api/auth/me,
- * login, registration, and logout.
- */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /**
-   * Restore existing authenticated session on app initialization
-   */
   const initializeAuth = useCallback(async () => {
     try {
       const response = await authService.getCurrentUser();
-      if (response && response.data && response.data.user) {
-        setUser(response.data.user);
-      } else {
-        setUser(null);
-      }
+      setUser(response?.data?.user || null);
     } catch {
-      // 401 / Not authenticated or connection error on initial load is expected for guests
+      // Guests get a 401 here, so treat it as "not logged in".
       setUser(null);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     let isMounted = true;
+
     authService
       .getCurrentUser()
       .then((response) => {
-        if (isMounted) {
-          if (response && response.data && response.data.user) {
-            setUser(response.data.user);
-          } else {
-            setUser(null);
-          }
-        }
+        if (isMounted) setUser(response?.data?.user || null);
       })
       .catch(() => {
-        if (isMounted) {
-          setUser(null);
-        }
+        // Guests get a 401 here, so treat it as "not logged in".
+        if (isMounted) setUser(null);
       })
       .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       });
 
     return () => {
@@ -62,9 +40,6 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  /**
-   * Log in user with credentials and update state
-   */
   const login = async (credentials) => {
     setError(null);
     try {
@@ -78,9 +53,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  /**
-   * Register new user (Student or Alumni) and establish authenticated session
-   */
   const register = async (userData) => {
     setError(null);
     try {
@@ -94,9 +66,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  /**
-   * Terminate authenticated session and clear HttpOnly cookie
-   */
   const logout = async () => {
     try {
       await authService.logout();

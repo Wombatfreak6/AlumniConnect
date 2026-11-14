@@ -53,12 +53,11 @@ export default function MyJobsPage() {
   };
 
   if (loading) {
-    return <Loading text="Loading your posted opportunities..." fullScreen={false} />;
+    return <Loading message="Loading your posted opportunities..." fullScreen={false} />;
   }
 
   return (
     <div className="jobs-page container">
-      {/* Header */}
       <div className="jobs-header">
         <div className="jobs-header-main">
           <div className="badge-strip" style={{ marginBottom: 'var(--space-2)' }}>
@@ -86,7 +85,7 @@ export default function MyJobsPage() {
         </div>
       </div>
 
-      {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+      {error && <ErrorAlert message={error} />}
 
       {jobs.length === 0 ? (
         <div className="jobs-empty-state">

@@ -1,8 +1,5 @@
 const { prisma } = require('../../config/database');
 
-/**
- * Retrieves paginated list of users with multi-parameter filtering for administrative oversight.
- */
 async function listAllUsers({ page, limit, role, isActive, search }) {
   const where = {};
 
@@ -64,9 +61,6 @@ async function listAllUsers({ page, limit, role, isActive, search }) {
   };
 }
 
-/**
- * Retrieves comprehensive user information for administrative audit.
- */
 async function getUserDetails(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -113,10 +107,6 @@ async function getUserDetails(userId) {
   return user;
 }
 
-/**
- * Activates or deactivates a user account.
- * Prohibits an administrator from deactivating their own account.
- */
 async function updateUserStatus(targetUserId, isActive, adminUserId) {
   if (targetUserId === adminUserId && !isActive) {
     const error = new Error('Cannot deactivate your own administrator account.');
@@ -134,6 +124,7 @@ async function updateUserStatus(targetUserId, isActive, adminUserId) {
     throw error;
   }
 
+  // Admin ko bhi deactivate mat hone do, warna console lock ho sakta hai.
   if (existing.role === 'ADMIN' && !isActive) {
     const error = new Error('Cannot deactivate a System Administrator account.');
     error.statusCode = 400;

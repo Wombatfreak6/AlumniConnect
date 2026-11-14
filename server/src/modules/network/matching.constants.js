@@ -1,15 +1,11 @@
-/**
- * Centralized constants and weights for intelligent matching.
- * Total maximum score: 100 points
- */
-
+// Total maximum match score is 100 points.
 const MATCHING_WEIGHTS = {
   SKILLS: 50,    // 50% max contribution
   BRANCH: 30,    // 30% max contribution
   INDUSTRY: 20,  // 20% max contribution
 };
 
-// Common English stop-words to exclude from keyword extraction
+// Common English words that add no meaning to a match.
 const STOP_WORDS = new Set([
   'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and',
   'any', 'are', 'aren\'t', 'as', 'at', 'be', 'because', 'been', 'before', 'being',

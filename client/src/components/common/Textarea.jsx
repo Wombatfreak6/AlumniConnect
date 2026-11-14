@@ -1,9 +1,6 @@
 import React, { useId } from 'react';
 import './Form.css';
 
-/**
- * Reusable Textarea Component
- */
 export default function Textarea({
   label,
   id,

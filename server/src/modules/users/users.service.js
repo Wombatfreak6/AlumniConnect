@@ -1,9 +1,6 @@
 const { prisma } = require('../../config/database');
 
-/**
- * Common safe selection for user public/profile discovery.
- * Strictly guarantees passwordHash and internal authentication flags are excluded.
- */
+// passwordHash is deliberately not part of this selection.
 const SAFE_USER_SELECT = {
   id: true,
   name: true,
@@ -30,9 +27,6 @@ const SAFE_USER_SELECT = {
   },
 };
 
-/**
- * Formats user entity to simplify the userSkills array into clean skill objects.
- */
 function formatUserResponse(user) {
   if (!user) return null;
   const { userSkills, ...rest } = user;
@@ -48,10 +42,6 @@ function formatUserResponse(user) {
   };
 }
 
-/**
- * Retrieves the full profile of the currently authenticated user.
- * Supports auto-creation of a blank profile if missing from legacy records.
- */
 async function getMyProfile(userId) {
   let user = await prisma.user.findUnique({
     where: { id: userId },
@@ -64,7 +54,7 @@ async function getMyProfile(userId) {
     throw error;
   }
 
-  // Ensure profile existence
+  // Purane users ke paas profile missing ho sakti hai, toh yahin bana dete hain.
   if (!user.profile) {
     await prisma.profile.create({
       data: { userId },
@@ -78,11 +68,7 @@ async function getMyProfile(userId) {
   return formatUserResponse(user);
 }
 
-/**
- * Updates the authenticated user's profile and optional display name.
- */
 async function updateMyProfile(userId, { profileData, userName }) {
-  // 1. Update User name if supplied
   if (userName) {
     await prisma.user.update({
       where: { id: userId },
@@ -90,7 +76,6 @@ async function updateMyProfile(userId, { profileData, userName }) {
     });
   }
 
-  // 2. Upsert profile data
   await prisma.profile.upsert({
     where: { userId },
     update: profileData,
@@ -100,7 +85,6 @@ async function updateMyProfile(userId, { profileData, userName }) {
     },
   });
 
-  // 3. Return refreshed user profile
   const updatedUser = await prisma.user.findUnique({
     where: { id: userId },
     select: SAFE_USER_SELECT,
@@ -109,10 +93,6 @@ async function updateMyProfile(userId, { profileData, userName }) {
   return formatUserResponse(updatedUser);
 }
 
-/**
- * Retrieves public profile by user ID for peer discovery.
- * Rejects inactive users and never leaks credentials.
- */
 async function getPublicProfileById(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -147,14 +127,9 @@ async function getPublicProfileById(userId) {
   return formatUserResponse(user);
 }
 
-/**
- * Associates a skill with the authenticated user's profile.
- * Automatically normalizes skill name and prevents duplicates.
- */
 async function addUserSkill(userId, { skillName, skillId }) {
   let targetSkillId = skillId;
 
-  // If skillName provided, find case-insensitively or create new skill
   if (!targetSkillId && skillName) {
     const existingSkill = await prisma.skill.findFirst({
       where: {
@@ -175,7 +150,6 @@ async function addUserSkill(userId, { skillName, skillId }) {
     }
   }
 
-  // Validate skill existence
   const skill = await prisma.skill.findUnique({
     where: { id: targetSkillId },
   });
@@ -186,7 +160,7 @@ async function addUserSkill(userId, { skillName, skillId }) {
     throw error;
   }
 
-  // Check for duplicate user-skill association
+  // Same skill ek user ke profile pe do baar nahi lag sakti.
   const existingUserSkill = await prisma.userSkill.findUnique({
     where: {
       userId_skillId: {
@@ -202,7 +176,6 @@ async function addUserSkill(userId, { skillName, skillId }) {
     throw error;
   }
 
-  // Create join association
   const userSkill = await prisma.userSkill.create({
     data: {
       userId,
@@ -220,10 +193,6 @@ async function addUserSkill(userId, { skillName, skillId }) {
   };
 }
 
-/**
- * Disassociates a skill from the authenticated user's profile.
- * Prevents unauthorized modification by enforcing userId matching.
- */
 async function removeUserSkill(userId, skillId) {
   const existingUserSkill = await prisma.userSkill.findUnique({
     where: {

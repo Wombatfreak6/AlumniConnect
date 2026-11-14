@@ -1,14 +1,11 @@
 const jobsService = require('./jobs.service');
 const { validateJobPost, validateJobListQuery, validateIntegerId } = require('./jobs.validation');
 
-// ============================================================================
-// POST /api/jobs
-// ============================================================================
+// A job can be managed by the alumnus who posted it or by an admin.
+function canManageJob(job, user) {
+  return job.postedById === user.id || user.role === 'ADMIN';
+}
 
-/**
- * Creates a new job post.
- * Restricted to ALUMNI. postedById is always sourced from req.user.id.
- */
 async function createJob(req, res, next) {
   try {
     const { isValid, errors, sanitized } = validateJobPost(req.body, true);
@@ -16,8 +13,8 @@ async function createJob(req, res, next) {
       return res.status(400).json({ success: false, message: errors.join(' ') });
     }
 
-    const currentUserId = req.user.userId || req.user.id;
-    const job = await jobsService.createJob(currentUserId, sanitized);
+    // Poster id hamesha token se aata hai, request body se nahi.
+    const job = await jobsService.createJob(req.user.id, sanitized);
 
     return res.status(201).json({
       success: true,
@@ -29,18 +26,9 @@ async function createJob(req, res, next) {
   }
 }
 
-// ============================================================================
-// GET /api/jobs/my  ← must be registered BEFORE /:id to avoid "my" → parseInt
-// ============================================================================
-
-/**
- * Returns all jobs posted by the authenticated alumni with per-job referral summaries.
- * Restricted to ALUMNI.
- */
 async function getMyJobs(req, res, next) {
   try {
-    const currentUserId = req.user.userId || req.user.id;
-    const jobs = await jobsService.getMyJobs(currentUserId);
+    const jobs = await jobsService.getMyJobs(req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -52,14 +40,6 @@ async function getMyJobs(req, res, next) {
   }
 }
 
-// ============================================================================
-// GET /api/jobs
-// ============================================================================
-
-/**
- * Returns a paginated, filtered list of all job posts.
- * Accessible to any authenticated user (STUDENT, ALUMNI, ADMIN).
- */
 async function listJobs(req, res, next) {
   try {
     const { page, limit, filters } = validateJobListQuery(req.query);
@@ -75,14 +55,6 @@ async function listJobs(req, res, next) {
   }
 }
 
-// ============================================================================
-// GET /api/jobs/:id
-// ============================================================================
-
-/**
- * Returns the full details of a single job post including alumni poster info.
- * Accessible to any authenticated user.
- */
 async function getJobById(req, res, next) {
   try {
     const { isValid, error, id } = validateIntegerId(req.params.id, 'jobId');
@@ -102,15 +74,6 @@ async function getJobById(req, res, next) {
   }
 }
 
-// ============================================================================
-// PUT /api/jobs/:id
-// ============================================================================
-
-/**
- * Updates an existing job post.
- * Only the original poster (ALUMNI) or an ADMIN may update.
- * Partial updates are supported — only provided fields are changed.
- */
 async function updateJob(req, res, next) {
   try {
     const { isValid: idValid, error: idError, id } = validateIntegerId(req.params.id, 'jobId');
@@ -118,18 +81,15 @@ async function updateJob(req, res, next) {
       return res.status(400).json({ success: false, message: idError });
     }
 
-    // Fetch current record to verify existence and ownership
     const existing = await jobsService.getJobById(id);
-
-    const currentUserId = req.user.userId || req.user.id;
-    if (existing.postedById !== currentUserId && req.user.role !== 'ADMIN') {
+    if (!canManageJob(existing, req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: only the original poster or an administrator can update this job.',
       });
     }
 
-    // Validate only the fields that were actually sent (requireAll = false)
+    // requireAll = false so partial updates only validate the fields that were sent.
     const { isValid, errors, sanitized } = validateJobPost(req.body, false);
     if (!isValid) {
       return res.status(400).json({ success: false, message: errors.join(' ') });
@@ -154,14 +114,6 @@ async function updateJob(req, res, next) {
   }
 }
 
-// ============================================================================
-// DELETE /api/jobs/:id
-// ============================================================================
-
-/**
- * Deletes a job post and cascades to its referrals.
- * Only the original poster (ALUMNI) or an ADMIN may delete.
- */
 async function deleteJob(req, res, next) {
   try {
     const { isValid, error, id } = validateIntegerId(req.params.id, 'jobId');
@@ -169,11 +121,8 @@ async function deleteJob(req, res, next) {
       return res.status(400).json({ success: false, message: error });
     }
 
-    // Fetch to verify existence and ownership before destructive operation
     const existing = await jobsService.getJobById(id);
-
-    const currentUserId = req.user.userId || req.user.id;
-    if (existing.postedById !== currentUserId && req.user.role !== 'ADMIN') {
+    if (!canManageJob(existing, req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Forbidden: only the original poster or an administrator can delete this job.',
@@ -199,4 +148,3 @@ module.exports = {
   updateJob,
   deleteJob,
 };
-

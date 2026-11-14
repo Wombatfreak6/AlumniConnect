@@ -7,9 +7,6 @@ import Loading from '../../components/common/Loading';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import './Recommendations.css';
 
-/**
- * Helper to determine CSS classes for match score badge and progress bar
- */
 function getScoreClasses(score) {
   if (score >= 70) {
     return { badgeClass: 'score-high', fillClass: 'fill-high', label: 'High Alignment' };
@@ -25,34 +22,8 @@ export default function RecommendationsPage() {
   const [jobMatches, setJobMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('alumni'); // 'alumni' | 'jobs'
-
-  const fetchRecommendations = () => {
-    setLoading(true);
-    setError(null);
-
-    Promise.all([
-      jobService.getRecommendedAlumni(),
-      jobService.getRecommendedJobs(),
-    ])
-      .then(([alumniRes, jobsRes]) => {
-        const alumniData = Array.isArray(alumniRes?.data)
-          ? alumniRes.data
-          : alumniRes?.data?.matches || [];
-        const jobsData = Array.isArray(jobsRes?.data)
-          ? jobsRes.data
-          : jobsRes?.data?.recommendations || [];
-
-        setAlumniMatches(alumniData);
-        setJobMatches(jobsData);
-      })
-      .catch((err) => {
-        setError(err.message || 'Failed to fetch intelligent recommendations.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  const [activeTab, setActiveTab] = useState('alumni');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -78,15 +49,13 @@ export default function RecommendationsPage() {
         setError(err.message || 'Failed to fetch intelligent recommendations.');
       })
       .finally(() => {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       });
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   return (
     <div className="recommendations-page container">
@@ -101,7 +70,15 @@ export default function RecommendationsPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <Button variant="outline" size="sm" onClick={fetchRecommendations}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setLoading(true);
+              setError(null);
+              setReloadKey((key) => key + 1);
+            }}
+          >
             🔄 Recalculate Matches
           </Button>
           <Link to="/profile">
@@ -125,7 +102,7 @@ export default function RecommendationsPage() {
       </div>
 
       {error && (
-        <ErrorAlert message={error} onDismiss={() => setError(null)} />
+        <ErrorAlert message={error} />
       )}
 
       {/* Navigation Tabs */}
@@ -148,11 +125,8 @@ export default function RecommendationsPage() {
 
       {/* Loading State */}
       {loading ? (
-        <Loading text="Analyzing your profile and calculating intelligent matches..." fullScreen={false} />
+        <Loading message="Analyzing your profile and calculating intelligent matches..." fullScreen={false} />
       ) : activeTab === 'alumni' ? (
-        /* ==================================================================== */
-        /* ALUMNI MATCHES SECTION                                               */
-        /* ==================================================================== */
         alumniMatches.length === 0 ? (
           <Card style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
             <div style={{ fontSize: '3rem', marginBottom: 'var(--space-2)' }}>🎓</div>
@@ -171,8 +145,9 @@ export default function RecommendationsPage() {
               const { badgeClass, fillClass, label } = getScoreClasses(score);
               const matchedSkills = alumnus.matchedSkills || [];
               const allSkills = alumnus.skills || matchedSkills;
+              const matchedLower = new Set(matchedSkills.map((skill) => skill.toLowerCase()));
               const unmatchedSkills = allSkills.filter(
-                (s) => !matchedSkills.map((m) => m.toLowerCase()).includes(s.toLowerCase())
+                (skill) => !matchedLower.has(skill.toLowerCase())
               );
               const breakdown = alumnus.breakdown || {};
 
@@ -325,9 +300,6 @@ export default function RecommendationsPage() {
           </div>
         )
       ) : (
-        /* ==================================================================== */
-        /* JOBS MATCHES SECTION                                                 */
-        /* ==================================================================== */
         jobMatches.length === 0 ? (
           <Card style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
             <div style={{ fontSize: '3rem', marginBottom: 'var(--space-2)' }}>💼</div>

@@ -61,7 +61,7 @@ export default function EditJobPage() {
           return;
         }
 
-        const isOwner = user && (user.id === job.postedById || user.userId === job.postedById);
+        const isOwner = user && user.id === job.postedById;
         const isAdmin = user?.role === 'ADMIN';
 
         if (!isOwner && !isAdmin) {
@@ -163,7 +163,7 @@ export default function EditJobPage() {
   };
 
   if (loading) {
-    return <Loading text="Retrieving job information..." fullScreen={false} />;
+    return <Loading message="Retrieving job information..." fullScreen={false} />;
   }
 
   return (
@@ -180,7 +180,7 @@ export default function EditJobPage() {
         title="Edit Opportunity Posting"
         subtitle="Update role details, qualifications, or application deadlines"
       >
-        {apiError && <ErrorAlert message={apiError} onDismiss={() => setApiError(null)} />}
+        {apiError && <ErrorAlert message={apiError} />}
 
         <form onSubmit={handleSubmit} noValidate>
           <Input

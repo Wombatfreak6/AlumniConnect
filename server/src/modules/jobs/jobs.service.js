@@ -1,9 +1,6 @@
 const { prisma } = require('../../config/database');
 
-/**
- * Reusable Prisma select for the alumni poster embedded in job responses.
- * Never exposes passwordHash or isActive internals.
- */
+// Poster details shown with a job; passwordHash is never selected.
 const POSTER_SELECT = {
   id: true,
   name: true,
@@ -21,10 +18,6 @@ const POSTER_SELECT = {
   },
 };
 
-/**
- * Creates a new job post.
- * postedById is always taken from the authenticated user — never from the request body.
- */
 async function createJob(alumniId, jobData) {
   const job = await prisma.jobPost.create({
     data: {
@@ -39,10 +32,6 @@ async function createJob(alumniId, jobData) {
   return job;
 }
 
-/**
- * Returns a paginated, filtered list of job posts.
- * Supports full-text search across title, description, and company.
- */
 async function listJobs({ page, limit, filters }) {
   const where = buildJobWhereClause(filters);
 
@@ -71,10 +60,6 @@ async function listJobs({ page, limit, filters }) {
   };
 }
 
-/**
- * Returns a single job post with full poster details.
- * Throws 404 if the job does not exist.
- */
 async function getJobById(jobId) {
   const job = await prisma.jobPost.findUnique({
     where: { id: jobId },
@@ -93,10 +78,6 @@ async function getJobById(jobId) {
   return job;
 }
 
-/**
- * Updates a job post.
- * Ownership is enforced in the controller before calling this function.
- */
 async function updateJob(jobId, updateData) {
   const updated = await prisma.jobPost.update({
     where: { id: jobId },
@@ -109,18 +90,11 @@ async function updateJob(jobId, updateData) {
   return updated;
 }
 
-/**
- * Deletes a job post and cascades to its referrals (onDelete: Cascade on JobReferral).
- * Ownership is enforced in the controller before calling this function.
- */
+// Referrals are removed automatically via onDelete: Cascade in the Prisma schema.
 async function deleteJob(jobId) {
   await prisma.jobPost.delete({ where: { id: jobId } });
 }
 
-/**
- * Returns all jobs posted by a specific alumni, with per-job referral counts
- * broken down by status for the management dashboard.
- */
 async function getMyJobs(alumniId) {
   const jobs = await prisma.jobPost.findMany({
     where: { postedById: alumniId },
@@ -133,7 +107,6 @@ async function getMyJobs(alumniId) {
     },
   });
 
-  // Enrich each job with a status breakdown summary
   return jobs.map((job) => {
     const statusCounts = { PENDING: 0, REVIEWED: 0, ACCEPTED: 0, REJECTED: 0 };
     for (const ref of job.referrals) {
@@ -150,13 +123,6 @@ async function getMyJobs(alumniId) {
   });
 }
 
-// ============================================================================
-// INTERNAL HELPERS
-// ============================================================================
-
-/**
- * Builds a Prisma `where` clause from validated filter parameters.
- */
 function buildJobWhereClause({ search, company, employmentType, experienceLevel } = {}) {
   const where = {};
 
@@ -173,7 +139,6 @@ function buildJobWhereClause({ search, company, employmentType, experienceLevel 
   }
 
   if (search) {
-    // Full-text search across title, description, and company name
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },

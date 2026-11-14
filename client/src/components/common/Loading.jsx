@@ -1,9 +1,6 @@
 import React from 'react';
 import './Loading.css';
 
-/**
- * Reusable Loading Spinner Component
- */
 export default function Loading({
   message = 'Loading...',
   fullScreen = false,

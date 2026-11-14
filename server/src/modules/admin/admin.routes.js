@@ -4,7 +4,6 @@ const { authenticateToken, authorizeRoles } = require('../../middleware/authMidd
 
 const router = Router();
 
-// Enforce authentication and ADMIN role for all routes in this router
 router.use(authenticateToken, authorizeRoles('ADMIN'));
 
 router.get('/users', adminController.getUsers);

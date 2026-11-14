@@ -2,12 +2,6 @@ import React from 'react';
 import Card from '../common/Card';
 import './ActivityFeed.css';
 
-/**
- * ActivityFeed - Reusable activity/announcement timeline widget
- *
- * @param {string} [title="Recent Activity"]
- * @param {Array<{ id: string|number, title: string, description: string, timestamp: string, icon?: string, tag?: string }>} items
- */
 export default function ActivityFeed({
   title = 'Recent Activity',
   items = [],
@@ -16,7 +10,7 @@ export default function ActivityFeed({
   return (
     <Card
       title={title}
-      action={action}
+      headerAction={action}
       className="activity-feed-card"
     >
       {items.length === 0 ? (

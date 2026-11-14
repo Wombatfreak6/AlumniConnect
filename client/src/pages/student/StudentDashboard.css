@@ -195,18 +195,6 @@
   letter-spacing: 0.04em;
 }
 
-.badge-phase {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
-}
-
-.badge-future {
-  background-color: var(--color-surface-hover);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-}
-
 .module-name {
   font-size: var(--font-base);
   font-weight: 700;
@@ -225,13 +213,6 @@
 .module-footer {
   border-top: 1px dashed var(--color-border);
   padding-top: var(--space-3);
-}
-
-.placeholder-tag {
-  font-size: var(--font-xs);
-  color: var(--color-text-muted);
-  font-weight: 500;
-  font-style: italic;
 }
 
 @media (max-width: 768px) {

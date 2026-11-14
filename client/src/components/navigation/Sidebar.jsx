@@ -2,9 +2,6 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 
-/**
- * Reusable Dashboard Navigation Sidebar
- */
 export default function Sidebar({
   role = 'STUDENT',
   title = 'Dashboard',
@@ -43,7 +40,7 @@ export default function Sidebar({
 
       <div className="sidebar-footer">
         <p>AlumniConnect v1.0.0</p>
-        <p>Phase 1 Frontend Foundation</p>
+        <p>Final Integrated Release</p>
       </div>
     </aside>
   );

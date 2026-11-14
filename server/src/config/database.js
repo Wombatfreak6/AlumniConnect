@@ -6,10 +6,7 @@ const config = require('./index');
 let prisma;
 let pool;
 
-/**
- * Initializes and returns a singleton PrismaClient instance
- * configured with PostgreSQL driver adapter.
- */
+// Build the Prisma client once and reuse it everywhere.
 function getPrismaClient() {
   if (!prisma) {
     const connectionString = config.databaseUrl || process.env.DATABASE_URL || 'postgresql://localhost:5432/alumni_connect?schema=public';
@@ -22,9 +19,6 @@ function getPrismaClient() {
 
 prisma = getPrismaClient();
 
-/**
- * Verifies database connectivity.
- */
 async function connectDB() {
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -36,9 +30,6 @@ async function connectDB() {
   }
 }
 
-/**
- * Disconnects Prisma client and drains the PostgreSQL connection pool cleanly.
- */
 async function disconnectDB() {
   try {
     if (prisma) {
